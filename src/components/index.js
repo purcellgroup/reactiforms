@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-// import
+import React, { useState, useEffect } from "react";
+import { defaultInputOptions } from "../types";
 
 export function Form(props) {
   return <form onSubmit={props.handleSubmit}>{props.children}</form>;
