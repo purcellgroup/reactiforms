@@ -1,0 +1,24 @@
+{
+  "name": "tiny-fast-forms",
+  "version": "0.1.0",
+  "description": "A tiny React library to quickly create efficient react forms.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flow-state-15/tiny-fast-forms.git"
+  },
+  "keywords": [
+    "react",
+    "react forms",
+    "efficient react forms"
+  ],
+  "author": "Dan Purcell purcellgroup88@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flow-state-15/tiny-fast-forms/issues"
+  },
+  "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme"
+}
