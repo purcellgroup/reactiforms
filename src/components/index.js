@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { defaultInputOptions } from "../types";
 
-export function Form(props) {
-  return <form onSubmit={props.handleSubmit}>{props.children}</form>;
+export function Form({ handleSubmit, children }) {
+  return <form onSubmit={handleSubmit}>{children}</form>;
 }
 
 export function createInput(formStore) {
-  return function (props) {
+  return function ({ initialInputValue, runOnChange, ...props }) {
     const [inputState, setInputState] = useState({
       ...defaultInputOptions,
       ...props,
+      value: initialInputValue || "",
     });
-    const [inputValue, setInputValue] = useState(props.initialInputValue || "");
+    // const [inputValue, setInputValue] = useState(initialInputValue || "");
 
     useEffect(() => {
       //user can run utility fn on change
       const change = function (e) {
-        if (props.runOnChange) props.runOnChange(e);
+        if (runOnChange) runOnChange(e);
         setInputState((s) => ({ ...s, value: e.target.value }));
-        setInputValue(e.target.value);
+        // setInputValue(e.target.value);
       };
 
-      //setup input setter pair
+      //setup input setter
       inputState.onChange = change;
-      inputState.value = inputValue;
       //add new input to form instance
       formStore.inputs[inputState.id] = inputState;
+
+      return () => {
+        formStore.inputs[inputState.id];
+      };
     }, []);
 
     console.log(
@@ -40,7 +44,7 @@ export function createInput(formStore) {
         type={inputState.type}
         id={inputState.id}
         name={inputState.name}
-        value={inputValue.value}
+        value={inputState.value}
         onChange={(e) =>
           setInputState((s) => ({ ...s, value: e.target.value }))
         }

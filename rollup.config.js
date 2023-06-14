@@ -5,12 +5,12 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 export default {
   input: "./src/index.js",
   output: [
-    {
-      file: "dist/index.js",
-      format: "cjs",
-      exports: "auto",
-      sourcemap: true,
-    },
+    // {
+    //   file: "dist/index.js",
+    //   format: "cjs",
+    //   exports: "auto",
+    //   sourcemap: true,
+    // },
     {
       file: "dist/index.es.js",
       format: "esm",
@@ -18,6 +18,7 @@ export default {
       sourcemap: true,
     },
   ],
+  external: ["react", "react-dom"],
   plugins: [
     external(), // exclude peerDependencies from the bundle
     nodeResolve(), // tells Rollup how to find node modules

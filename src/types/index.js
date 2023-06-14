@@ -26,6 +26,7 @@ export const defaultInputOptions = {
   runOnChange: null,
   touched: false,
   isValid: false,
+  initialInputValue: null,
   validate: function (fn) {
     if (fn) {
       if (fn(this)) {
