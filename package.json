@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "A tiny React library to quickly create efficient react forms.",
   "main": "dist/index.js",
-
   "scripts": {
     "test": "npm test",
     "build": "babel src --out-dir dist"
@@ -25,5 +24,8 @@
   "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme",
   "peerDependencies": {
     "react": "^18.0.0"
+  },
+  "dependencies": {
+    "nanoid": "^4.0.2"
   }
 }
