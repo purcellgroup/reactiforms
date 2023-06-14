@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from "react";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import { defaultFormOptions } from "../types";
 import { createInput } from "../components";
 
