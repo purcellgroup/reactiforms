@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createDefaultInputOptions } from "../types";
 
 export function Form({ handleSubmit, children }) {
+  //!! todo: create suspense 
   return <form onSubmit={handleSubmit}>{children}</form>;
 }
 
@@ -20,6 +21,7 @@ export function createInput(formStore) {
       //user can run utility fn on change
       const change = function (e) {
         if (runOnChange) runOnChange(e);
+        //todo run `validate` when input changes
         setInputState((s) => ({ ...s, value: e.target.value }));
         // setInputValue(e.target.value);
       };

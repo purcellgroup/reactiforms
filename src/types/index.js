@@ -3,7 +3,7 @@ export const __FormStateInstances = new Map();
 
 export const defaultFormOptions = {
   //!! need submit logic
-  handleSubmit: async () => {
+  handleSubmit: async (e) => {
     console.warn("Form submit function not provided");
   },
   //!! need validation logic
@@ -11,6 +11,11 @@ export const defaultFormOptions = {
   spinner: null,
   //!! form state: changes, dirty fields, touched fields, reset function
   resetForm: null,
+  // todo: input overloads. these are functions applied to all inputs
+  // todo: in form by default
+  inputUtils: {},
+  // todo: submit suspense flag
+  suspense: true,
 };
 
 // todo: extract function defs and flatten

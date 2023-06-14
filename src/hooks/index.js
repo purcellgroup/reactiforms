@@ -26,7 +26,7 @@ export function useCreateFormStore(stateOverloads = {}) {
   const Input = useCallback(createInput(_formStore.current), []);
 
   return {
-    _formStore: _formStore.current,
+    formStore: _formStore.current,
     Input,
     _formId: _formId.current,
     formOptions: _formStore.current.formOptions,
