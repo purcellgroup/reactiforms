@@ -1,14 +1,15 @@
 import { useEffect, useCallback, useRef } from "react";
 import { nanoid } from "nanoid/non-secure";
-import { defaultFormOptions, __FormStateInstances } from "../types";
+import { createDefaultFormOptions, __FormStateInstances } from "../types";
 import { createInput } from "../components";
 
 export function useCreateFormStore(stateOverloads = {}) {
+  const defaultFormOptions = useRef(createDefaultFormOptions());
   const _formId = useRef(nanoid(6));
   const _formStore = useRef({
     inputs: {},
     _formId: _formId.current,
-    formOptions: { ...defaultFormOptions, ...stateOverloads },
+    formOptions: { ...defaultFormOptions.current, ...stateOverloads },
   });
 
   //form config setup
@@ -26,10 +27,10 @@ export function useCreateFormStore(stateOverloads = {}) {
   const Input = useCallback(createInput(_formStore.current), []);
 
   return {
-    formStore: _formStore.current,
     Input,
-    _formId: _formId.current,
     formOptions: _formStore.current.formOptions,
+    formStore: _formStore.current,
+    _formId: _formId.current,
   };
 }
 

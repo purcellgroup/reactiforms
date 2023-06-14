@@ -1,7 +1,7 @@
 // dynamic instances for new form components
 export const __FormStateInstances = new Map();
 
-export const defaultFormOptions = {
+export const createDefaultFormOptions = () => ({
   //!! need submit logic
   handleSubmit: async (e) => {
     console.warn("Form submit function not provided");
@@ -16,11 +16,11 @@ export const defaultFormOptions = {
   inputUtils: {},
   // todo: submit suspense flag
   suspense: true,
-};
+  suspenseDelay: 2500,
+});
 
 // todo: extract function defs and flatten
 export const createDefaultInputOptions = () => ({
-  //!! field/button disabling
   id: "",
   className: "",
   inputName: "",

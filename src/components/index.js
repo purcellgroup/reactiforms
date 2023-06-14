@@ -47,7 +47,7 @@ export function createInput(formStore) {
         id={inputState.id}
         name={inputState.name}
         value={inputState.value}
-        onChange={(e) => inputState.onChange(e)}
+        onChange={inputState.onChange}
         onFocus={inputState.onFocus}
         onBlur={inputState.onBlur}
       />
