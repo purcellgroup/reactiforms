@@ -1,5 +1,5 @@
 // dynamic instances for new form components
-export const __FormStateInstances = new Map();
+export const FORM_STATE_INSTANCES = new Map();
 
 export const createDefaultFormOptions = () => ({
   //!! need submit logic
@@ -27,31 +27,9 @@ export const createDefaultInputOptions = () => ({
   disabled: false,
   type: "text",
   name: "",
-  value: "",
   runOnChange: null,
   touched: false,
   isValid: false,
-  initialInputValue: null,
-  validate: (fn) => {
-    console.log("validate, THIS", this);
-    if (fn) {
-      if (fn(this)) {
-        this.isValid = true;
-      }
-    } else {
-      console.warn("Input validation function not provided");
-    }
-  },
-  onChange: (e) => {
-    console.warn("DEFAULT CHANGE FN, e: ", e);
-  },
-  onFocus: (fn) => {
-    console.log("on focus THIS: ", this);
-    this.touched = true;
-    fn(this);
-  },
-  onBlur: (fn) => {
-    console.log("on blur THIS: ", this);
-    fn(this);
-  },
+  initialInputValue: "",
+  validate: null,
 });

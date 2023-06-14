@@ -1,36 +1,38 @@
 import { useEffect, useCallback, useRef } from "react";
 import { nanoid } from "nanoid/non-secure";
-import { createDefaultFormOptions, __FormStateInstances } from "../types";
-import { createInput } from "../components";
+import { createDefaultFormOptions, FORM_STATE_INSTANCES } from "../types";
+import { createForm, createInput } from "../components";
 
 export function useCreateFormStore(stateOverloads = {}) {
   const defaultFormOptions = useRef(createDefaultFormOptions());
-  const _formId = useRef(nanoid(6));
-  const _formStore = useRef({
+  const FORM_ID = useRef(nanoid(6));
+  const FORM_STORE = useRef({
     inputs: {},
-    _formId: _formId.current,
+    formId: FORM_ID.current,
     formOptions: { ...defaultFormOptions.current, ...stateOverloads },
   });
 
   //form config setup
   useEffect(() => {
-    console.log("_FORMSTORE: ", _formStore.current);
-    __FormStateInstances.set(_formId.current, _formStore.current);
-    _formStore.current.resetForm = () =>
-      resetFormValues(_formStore.current.inputs);
+    console.log("_FORMSTORE: ", FORM_ID.current);
+    FORM_STATE_INSTANCES.set(FORM_ID.current, FORM_STORE.current);
+    FORM_STORE.current.resetForm = () =>
+      resetFormValues(FORM_STORE.current.inputs);
     return () => {
-      __FormStateInstances.delete(_formId.current);
+      FORM_STATE_INSTANCES.delete(FORM_ID.current);
     };
   }, []);
 
   //input belongs to this form instance
-  const Input = useCallback(createInput(_formStore.current), []);
+  const Input = useCallback(createInput(FORM_STORE.current), []);
+  const Form = useCallback(createForm({ defaultFormOptions, FORM_STORE }), [])
 
   return {
     Input,
-    formOptions: _formStore.current.formOptions,
-    formStore: _formStore.current,
-    _formId: _formId.current,
+    Form,
+    formOptions: FORM_STORE.current.formOptions,
+    formStore: FORM_STORE.current,
+    formId: FORM_ID.current,
   };
 }
 
