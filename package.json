@@ -2,9 +2,11 @@
   "name": "tiny-fast-forms",
   "version": "0.1.0",
   "description": "A tiny React library to quickly create efficient react forms.",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "build": "babel src --out-dir dist"
   },
   "repository": {
     "type": "git",
@@ -20,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/flow-state-15/tiny-fast-forms/issues"
   },
-  "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme"
+  "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme",
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
 }
