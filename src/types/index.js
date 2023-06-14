@@ -14,7 +14,7 @@ export const defaultFormOptions = {
 };
 
 // todo: extract function defs and flatten
-export const defaultInputOptions = {
+export const createDefaultInputOptions = () => ({
   //!! field/button disabling
   id: "",
   className: "",
@@ -27,7 +27,8 @@ export const defaultInputOptions = {
   touched: false,
   isValid: false,
   initialInputValue: null,
-  validate: function (fn) {
+  validate: (fn) => {
+    console.log("validate, THIS", this);
     if (fn) {
       if (fn(this)) {
         this.isValid = true;
@@ -39,11 +40,13 @@ export const defaultInputOptions = {
   onChange: (e) => {
     console.warn("DEFAULT CHANGE FN, e: ", e);
   },
-  onFocus: function (fn) {
+  onFocus: (fn) => {
+    console.log("on focus THIS: ", this);
     this.touched = true;
     fn(this);
   },
-  onBlur: function (fn) {
+  onBlur: (fn) => {
+    console.log("on blur THIS: ", this);
     fn(this);
   },
-};
+});

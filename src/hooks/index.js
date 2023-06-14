@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { nanoid } from "nanoid/non-secure";
-import { defaultFormOptions } from "../types";
+import { defaultFormOptions, __FormStateInstances } from "../types";
 import { createInput } from "../components";
 
 export function useCreateFormStore(stateOverloads = {}) {

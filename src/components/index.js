@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { defaultInputOptions } from "../types";
+import { createDefaultInputOptions } from "../types";
 
 export function Form({ handleSubmit, children }) {
   return <form onSubmit={handleSubmit}>{children}</form>;
 }
 
 export function createInput(formStore) {
+  //new inputs get their own default options
+  const defaultInputOptions = createDefaultInputOptions();
   return function ({ initialInputValue, runOnChange, ...props }) {
     const [inputState, setInputState] = useState({
       ...defaultInputOptions,
@@ -22,6 +24,9 @@ export function createInput(formStore) {
         // setInputValue(e.target.value);
       };
 
+      //!! todo: create onFocus overload to enable "touched" feature
+      //!! without relying on scoped this
+
       //setup input setter
       inputState.onChange = change;
       //add new input to form instance
@@ -32,12 +37,7 @@ export function createInput(formStore) {
       };
     }, []);
 
-    console.log(
-      "input rendered, props, inputState, inputValue: ",
-      props,
-      inputState,
-      inputValue
-    );
+    console.log("input rendered, props, inputState: ", props, inputState);
 
     return (
       <input
@@ -45,9 +45,9 @@ export function createInput(formStore) {
         id={inputState.id}
         name={inputState.name}
         value={inputState.value}
-        onChange={(e) =>
-          setInputState((s) => ({ ...s, value: e.target.value }))
-        }
+        onChange={(e) => inputState.onChange(e)}
+        onFocus={inputState.onFocus}
+        onBlur={inputState.onBlur}
       />
     );
   };
