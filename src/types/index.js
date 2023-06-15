@@ -1,14 +1,15 @@
 // dynamic instances for new form components
-export const FORM_STATE_INSTANCES = new Map();
+export const FORM_STORE_INSTANCES = new Map();
 
 export const createDefaultFormOptions = () => ({
   //!! need submit logic
-  handleSubmit: async (e) => {
-    console.warn("Form submit function not provided");
+  handleSubmit: () => {
+    console.warn("Form's handleSubmit not provided");
   },
   //!! need validation logic
   //react spinner component
-  spinner: null,
+  requireSpinner: true,
+  pinner: null,
   //!! form state: changes, dirty fields, touched fields, reset function
   resetForm: null,
   // todo: input overloads. these are functions applied to all inputs
@@ -24,6 +25,7 @@ export const createDefaultInputOptions = () => ({
   id: "",
   className: "",
   inputName: "",
+  inputKey: null,
   disabled: false,
   type: "text",
   name: "",
@@ -35,4 +37,5 @@ export const createDefaultInputOptions = () => ({
   runOnFocus: null,
   runOnBlur: null,
   runOnHover: null,
+  setter: null,
 });
