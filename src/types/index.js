@@ -3,9 +3,6 @@ export const FORM_STORE_INSTANCES = new Map();
 
 export const createDefaultFormOptions = () => ({
   //!! need submit logic
-  handleSubmit: () => {
-    console.warn("Form's handleSubmit not provided");
-  },
   //!! need validation logic
   //react spinner component
   requireSpinner: true,
@@ -18,6 +15,9 @@ export const createDefaultFormOptions = () => ({
   // todo: submit suspense flag
   suspense: true,
   suspenseDelay: 2500,
+  handleSubmit: () => {
+    console.warn("Form's handleSubmit not provided");
+  },
 });
 
 // todo: extract function defs and flatten

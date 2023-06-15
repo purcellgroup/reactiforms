@@ -41,6 +41,8 @@ export function useCreateFormStore(stateOverloads = {}) {
       console.log("FORM_STORE_INSTANCES: ", FORM_STORE_INSTANCES);
       return FORM_STORE_INSTANCES.get(FORM_ID.current);
     },
+    isFormValid: () =>
+      validateForm(FORM_STORE_INSTANCES.get(FORM_ID.current).inputs),
   };
 }
 
@@ -49,3 +51,12 @@ const resetFormValues = (inputMap) => {
     input.value = input.initialInputValue || "";
   });
 };
+
+export const getFormData = (inputs) =>
+  Array.from(inputs.entries()).reduce((s, [id, input]) => {
+    s[id] = input.value;
+    return s;
+  }, {});
+
+export const validateForm = (inputs) =>
+  Array.from(inputs.entries()).every(([, input]) => input.isValid);

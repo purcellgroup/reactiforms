@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createDefaultInputOptions } from "../types";
 import { nanoid } from "nanoid/non-secure";
+import { getFormData } from "../hooks";
 
 export function createForm(formInstance) {
-  return function ({ children, ...props }) {
+  return function ({ children, onSubmit, ...props }) {
     //!! todo: create suspense
     return (
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (props.onSubmit) {
-            const formData = Object.fromEntries(formInstance.inputs.entries())
-            props.onSubmit({ ...e, formData });
+          console.log("submitting, formInstance: ", formInstance);
+          e.formData = getFormData(formInstance.inputs);
+          if (onSubmit) {
+            onSubmit(e);
           } else {
             formInstance.formOptions.handleSubmit();
           }
