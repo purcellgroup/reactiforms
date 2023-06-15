@@ -1,6 +1,6 @@
 {
   "name": "tiny-fast-forms",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A tiny React library to quickly create efficient react forms.",
   "type": "module",
   "main": "dist/index.es.js",
