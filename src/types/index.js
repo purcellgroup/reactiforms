@@ -27,9 +27,12 @@ export const createDefaultInputOptions = () => ({
   disabled: false,
   type: "text",
   name: "",
-  runOnChange: null,
   touched: false,
   isValid: false,
   initialInputValue: "",
   validate: null,
+  runOnChange: null,
+  runOnFocus: null,
+  runOnBlur: null,
+  runOnHover: null,
 });

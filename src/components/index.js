@@ -43,8 +43,8 @@ export function createInput(formStore) {
   return function ({
     initialInputValue,
     runOnChange,
+    runOnFocus,
     validate,
-    onFocus,
     ...props
   }) {
     const change = useCallback((e) => {
@@ -57,7 +57,7 @@ export function createInput(formStore) {
     }, []);
 
     const focus = useCallback((e) => {
-      if (inputState.onFocus) inputState.onFocus(e);
+      if (runOnFocus) runOnFocus(e);
       setInputState((s) => ({ ...s, touched: true }));
     }, []);
 
