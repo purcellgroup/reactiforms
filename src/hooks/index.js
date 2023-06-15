@@ -37,10 +37,7 @@ export function useCreateFormStore(stateOverloads = {}) {
     Form,
     formOptions: FORM_STORE.current.formOptions,
     formId: FORM_ID.current,
-    getFormStore: () => {
-      console.log("FORM_STORE_INSTANCES: ", FORM_STORE_INSTANCES);
-      return FORM_STORE_INSTANCES.get(FORM_ID.current);
-    },
+    getFormStore: () => FORM_STORE_INSTANCES.get(FORM_ID.current),
     isFormValid: () =>
       validateForm(FORM_STORE_INSTANCES.get(FORM_ID.current).inputs),
   };

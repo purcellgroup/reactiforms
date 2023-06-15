@@ -2,12 +2,10 @@
 export const FORM_STORE_INSTANCES = new Map();
 
 export const createDefaultFormOptions = () => ({
-  //!! need submit logic
-  //!! need validation logic
   //react spinner component
   requireSpinner: true,
   pinner: null,
-  //!! form state: changes, dirty fields, touched fields, reset function
+  // todo form state: changes, dirty fields, touched fields, reset function
   resetForm: null,
   // todo: input overloads. these are functions applied to all inputs
   // todo: in form by default

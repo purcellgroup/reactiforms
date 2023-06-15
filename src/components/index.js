@@ -5,12 +5,11 @@ import { getFormData } from "../hooks";
 
 export function createForm(formInstance) {
   return function ({ children, onSubmit, ...props }) {
-    //!! todo: create suspense
+    // todo: create suspense
     return (
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log("submitting, formInstance: ", formInstance);
           e.formData = getFormData(formInstance.inputs);
           if (onSubmit) {
             onSubmit(e);
