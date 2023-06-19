@@ -1,2 +1,3 @@
 import { useCreateFormStore } from "./hooks";
-export { useCreateFormStore };
+import { FORM_STORE_INSTANCES } from "./types";
+export { useCreateFormStore, FORM_STORE_INSTANCES };

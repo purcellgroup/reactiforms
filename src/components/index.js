@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createDefaultInputOptions } from "../types";
 import { nanoid } from "nanoid/non-secure";
-import { getFormData } from "../hooks";
 
 export function createForm(formInstance) {
   return function ({ children, onSubmit, ...props }) {
@@ -10,7 +9,7 @@ export function createForm(formInstance) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          e.formData = getFormData(formInstance.inputs);
+          e.formData = formInstance.getFormValues();
           if (onSubmit) {
             onSubmit(e);
           } else {
@@ -29,6 +28,8 @@ export function createInput(formStore) {
   //new inputs get their own default options
   const defaultInputOptions = createDefaultInputOptions();
   return function (props) {
+    //!! simplify this to use fewer react hooks
+
     //props needs to be internally stable
     const {
       initialInputValue,

@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme",
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "dependencies": {
     "nanoid": "^4.0.2"
