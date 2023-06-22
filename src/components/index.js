@@ -63,6 +63,7 @@ export function createInput(formStore) {
     });
 
     useEffect(() => {
+      //!! refactor to purify logic. no mutations of instance map.
       if (props.id) {
         formStore.inputs.set(props.id, inputState);
       } else {

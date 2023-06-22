@@ -4,6 +4,7 @@ import { createDefaultFormOptions, FORM_STORE_INSTANCES } from "../types";
 
 //!! try/catch fragile logic for custom errors
 
+//!! use integer as form id instead of nanoid
 const GEN_FORM_ID = () => nanoid(6);
 
 const GEN_FORM_OPTIONS = (stateOverloads) => ({
@@ -27,8 +28,6 @@ export const GEN_FORM_STORE = (stateOverloads) => {
     stable_store.resetForm = () => resetFormValues(stable_store.inputs);
     stable_store.getFormValues = () => getFormValues(stable_store.inputs);
     stable_store.getFormStore = () => {
-      console.log("getFormStore, FORM_STORE_INSTANCES: ", FORM_STORE_INSTANCES);
-      console.log("getFormStore, FORM_ID: ", stable_store.formId);
       return FORM_STORE_INSTANCES.get(stable_store.formId);
     }
     stable_store.isFormValid = () =>
