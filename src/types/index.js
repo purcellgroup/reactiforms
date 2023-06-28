@@ -1,14 +1,9 @@
-// dynamic instances for new form components
-//!! Might have to gen copy of map every new form
-//!! store instance. Mutate copy to keep hooks pure.
-export const FORM_STORE_INSTANCES = new Map();
-// pointer for mutation
-export const NEXT_FORM_STORE_INSTANCES = FORM_STORE_INSTANCES
+
 
 export const createDefaultFormOptions = () => ({
   //react spinner component
   requireSpinner: true,
-  pinner: null,
+  spinner: null,
   // todo form state: changes, dirty fields, touched fields, reset function
   resetForm: null,
   // todo: input overloads. these are functions applied to all inputs

@@ -1,16 +1,38 @@
-import { nanoid } from 'nanoid/non-secure'
+import { nanoid } from "nanoid/non-secure";
+import { useEffect, useState } from "react";
 import { createForm, createInput } from "../components";
-import { createDefaultFormOptions, FORM_STORE_INSTANCES } from "../types";
+import { createDefaultFormOptions } from "../types";
+
+// dynamic instances for new form components
+//!! Might have to gen copy of map every new form
+//!! store instance. Mutate copy to keep hooks pure.
+export let FORM_STORE_INSTANCES = new Map();
+// pointer for mutation
+let NEXT_FORM_STORE_INSTANCES = FORM_STORE_INSTANCES;
 
 //!! try/catch fragile logic for custom errors
 
 //!! use integer as form id instead of nanoid
-const GEN_FORM_ID = () => nanoid(6);
+let FORM_COUNTER = 0;
+
+const GEN_FORM_ID = () => {
+  ++FORM_COUNTER;
+  return FORM_COUNTER;
+};
 
 const GEN_FORM_OPTIONS = (stateOverloads) => ({
   ...createDefaultFormOptions(),
   ...stateOverloads,
 });
+
+const GEN_MUTABLE_STORE = () => {
+  if (NEXT_FORM_STORE_INSTANCES === FORM_STORE_INSTANCES) {
+    NEXT_FORM_STORE_INSTANCES = new Map();
+    FORM_STORE_INSTANCES.forEach((value, key) => {
+      NEXT_FORM_STORE_INSTANCES.set(key, value);
+    });
+  }
+};
 
 export const GEN_FORM_STORE = (stateOverloads) => {
   //stabilize instance references across renders
@@ -21,31 +43,124 @@ export const GEN_FORM_STORE = (stateOverloads) => {
     inputs: stable_inputs,
     formId: stable_id,
     formOptions: stable_options,
+    _inputCounter: 0,
+    _next_inputs: stable_inputs,
+    _map_inputs_to_next: () => {
+      if (stable_store._next_inputs === stable_store.inputs) {
+        stable_store._next_inputs = new Map();
+        stable_store.inputs.forEach((value, key) => {
+          stable_store._next_inputs.set(key, value);
+        });
+      }
+    },
   };
-  
-  if (!FORM_STORE_INSTANCES.has(stable_store.formId)) {
-    FORM_STORE_INSTANCES.set(stable_store.formId, stable_store);
-    stable_store.resetForm = () => resetFormValues(stable_store.inputs);
-    stable_store.getFormValues = () => getFormValues(stable_store.inputs);
-    stable_store.getFormStore = () => {
-      return FORM_STORE_INSTANCES.get(stable_store.formId);
-    }
-    stable_store.isFormValid = () =>
-      validateForm(FORM_STORE_INSTANCES.get(stable_store.formId).inputs)
-    stable_store.Input = createInput(stable_store);
-    stable_store.Form = createForm(stable_store)
-  }
 
-  return () => stable_store;
+  stable_store.resetForm = () => resetFormValues(stable_store.inputs);
+
+  stable_store.getFormValues = () => getFormValues(stable_store.inputs);
+
+  stable_store.getFormStore = () => {
+    console.log(stable_store.formId);
+    return FORM_STORE_INSTANCES.get(stable_store.formId);
+  };
+
+  stable_store.isFormValid = () =>
+    validateForm(FORM_STORE_INSTANCES.get(stable_store.formId).inputs);
+
+  stable_store.Input = createInput(stable_store);
+
+  stable_store.Form = createForm(stable_store);
+
+  stable_store.unsubscribe = () => {
+    GEN_MUTABLE_STORE();
+
+    NEXT_FORM_STORE_INSTANCES.delete(stable_store.formId);
+    FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
+  };
+
+  GEN_MUTABLE_STORE();
+  NEXT_FORM_STORE_INSTANCES.set(stable_store.formId, stable_store);
+  FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
+
+  return stable_store;
+};
+
+//!! HOOKS !!//
+
+export function useCreateFormStore(stateOverloads = {}) {
+  const STORE = genStore();
+  // const [id] = useState(GEN_FORM_ID)
+  // const [STORE, setSTORE] = useState(
+  //   GEN_FORM_STORE(stateOverloads, id)
+  //   //   () => {
+  //   //   console.warn("useState init function running")
+  //   //   return () => {
+  //   //     console.error("<<---running init closure--->>")
+  //   //     GEN_FORM_STORE(stateOverloads);
+  //   //   }
+  //   // }
+  // );
+  // const [getFormStore] = useState(() => () => FORM_STORE_INSTANCES.get(id))
+
+  //form config setup
+  // useEffect(() => {
+  //   if(!STORE){
+  //     const store = GEN_FORM_STORE(stateOverloads, id)
+  //     setSTORE(store)
+  //   }
+
+  //   console.log(
+  //     "UE IN useCreateFormStore invoked, FORM_STORE_INSTANCES, STORE: ",
+  //     FORM_STORE_INSTANCES,
+  //     id,
+  //     STORE
+  //   );
+
+  //   return () => {
+  //     // if (STORE) {
+  //     //   GEN_MUTABLE_STORE();
+  //     //   NEXT_FORM_STORE_INSTANCES.delete(id);
+  //     //   FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
+  //     //   console.warn(
+  //     //     "**RETURN** IN UE invoked, FORM_STORE_INSTANCES, STORE: ",
+  //     //     FORM_STORE_INSTANCES,
+  //     //     id,
+  //     //     STORE
+  //     //   );
+  //     // }
+  //   };
+  // }, [STORE]);
+
+  console.log(
+    "useCreateFormStore invoked, id, STORE: ",
+    // id,
+    STORE()
+  );
+
+  // return { formId: id, getFormStore, ...STORE}; // -> stable ref
+  return STORE();
+}
+
+//assign stable refs to hooks and insulate from rerenders
+export const genStore = (stateOverloads) => {
+  let unique_store = null;
+  return () => {
+    if (!unique_store) unique_store = GEN_FORM_STORE(stateOverloads);
+    console.log("useGenStore invoked, unique_store: ", unique_store);
+    return unique_store;
+  };
+};
+export const createFormStore = (initialFormOptions) => {
+  const store = genStore(initialFormOptions);
+  return store();
 };
 
 // stabilized memo across renders
 export const GEN_STABLE_REF = (value = null) => {
   const _ref = { current: value ? value : null };
-  return () => {
-    _ref.current ? _ref : null;
-  };
+  return () => _ref;
 };
+export const useStableRef = (value) => GEN_STABLE_REF(value); // -> fn
 
 // reset inputs in specific form store
 export const resetFormValues = (inputs) => {
