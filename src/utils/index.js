@@ -189,9 +189,11 @@ export const createStableRef = (value) => {
 export const useStableRef = (value) => createStableRef(value);
 
 // reset inputs in specific form store
+// !! param is a map
 export const resetFormValues = (inputs) => {
   inputs.forEach((input) => {
-    input.value = input.initialInputValue || "";
+    console.log("resetFormValues, input: ", input)
+    input.setter((s) => ({ ...s, value: input.initialInputValue, isValid: false }));
   });
 };
 
