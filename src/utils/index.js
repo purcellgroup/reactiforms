@@ -1,5 +1,3 @@
-import { nanoid } from "nanoid/non-secure";
-import { useEffect, useState } from "react";
 import { createForm, createInput } from "../components";
 import { createDefaultFormOptions } from "../types";
 
@@ -40,20 +38,40 @@ export const GEN_FORM_STORE = (stateOverloads) => {
   const stable_inputs = new Map();
   const stable_options = GEN_FORM_OPTIONS(stateOverloads);
   const stable_store = {
-    inputs: stable_inputs,
+    inputs: new Map(),
     formId: stable_id,
     formOptions: stable_options,
     _inputCounter: 0,
-    _next_inputs: stable_inputs,
-    _map_inputs_to_next: () => {
-      if (stable_store._next_inputs === stable_store.inputs) {
-        stable_store._next_inputs = new Map();
-        stable_store.inputs.forEach((value, key) => {
-          stable_store._next_inputs.set(key, value);
-        });
-      }
-    },
   };
+
+  stable_store._next_inputs = stable_store.inputs;
+  stable_store._map_inputs_to_next = function () {
+    if (stable_store._next_inputs === stable_store.inputs) {
+      stable_store._next_inputs = new Map();
+      stable_store.inputs.forEach((value, key) => {
+        stable_store._next_inputs.set(key, value);
+      });
+    }
+  };
+  stable_store._register_input = function (key, input_state) {
+    stable_store._inputCounter = stable_store._inputCounter + 1;
+    stable_store._map_inputs_to_next();
+    stable_store._next_inputs.set(key, input_state);
+    stable_store.inputs = stable_store._next_inputs;
+  };
+
+  stable_store._unregister_input = function (key) {
+    stable_store._inputCounter = stable_store._inputCounter - 1;
+    stable_store._map_inputs_to_next();
+    stable_store._next_inputs.delete(key);
+    stable_store.inputs = stable_store._next_inputs;
+  };
+
+  // _write_input_value: function (key, prevRef, event) {
+  //   const i = stable_store.inputs.get(key)
+  //   const updated = {...prevRef, value: event.target.value, isValid:}
+  //   i.value = value
+  // }
 
   stable_store.resetForm = () => resetFormValues(stable_store.inputs);
 
@@ -157,10 +175,18 @@ export const createFormStore = (initialFormOptions) => {
 
 // stabilized memo across renders
 export const GEN_STABLE_REF = (value = null) => {
-  const _ref = { current: value ? value : null };
-  return () => _ref;
+  const _ref = null;
+  return () => {
+    if (!_ref) {
+      _ref = { current: value ? value : null };
+    }
+    return _ref;
+  };
 };
-export const useStableRef = (value) => GEN_STABLE_REF(value); // -> fn
+export const createStableRef = (value) => {
+  const _ = GEN_STABLE_REF();
+};
+export const useStableRef = (value) => createStableRef(value);
 
 // reset inputs in specific form store
 export const resetFormValues = (inputs) => {
@@ -178,3 +204,4 @@ export const getFormValues = (inputs) =>
 
 export const validateForm = (inputs) =>
   Array.from(inputs.entries()).every(([, input]) => input.isValid);
+

@@ -35,4 +35,5 @@ export const createDefaultInputOptions = () => ({
   runOnBlur: null,
   runOnHover: null,
   setter: null,
+  _counter: 0,
 });
