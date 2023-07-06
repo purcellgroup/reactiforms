@@ -1,5 +1,3 @@
-
-
 export const createDefaultFormOptions = () => ({
   //react spinner component
   requireSpinner: true,
@@ -32,8 +30,7 @@ export const createDefaultInputOptions = () => ({
   validate: null,
   runOnChange: null,
   runOnFocus: null,
+  runOnTouch: null,
   runOnBlur: null,
-  runOnHover: null,
   setter: null,
-  _counter: 0,
 });

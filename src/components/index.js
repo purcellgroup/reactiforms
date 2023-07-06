@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createDefaultInputOptions } from "../types";
 
 export function createForm(formInstance) {
@@ -10,11 +10,13 @@ export function createForm(formInstance) {
           e.preventDefault();
           e.inputValues = formInstance.getFormValues();
           e.formData = formInstance;
-          if (onSubmit) {
+          if (onSubmit && isFunction(onSubmit)) {
             onSubmit(e);
           } else {
             formInstance.formOptions.handleSubmit();
           }
+
+          formInstance.resetForm();
         }}
         {...props}
       >
@@ -32,9 +34,12 @@ export function createInput(formStore) {
       initialInputValue,
       runOnChange,
       runOnFocus,
+      runOnTouch,
       validate,
       ...restOfProps
     } = props;
+    const key = useRef(null);
+    const touched = useRef(null);
     // handler overrides
     const change = useCallback((e) => {
       // use fresh react state for runOnChange
@@ -42,7 +47,8 @@ export function createInput(formStore) {
         const newState = {
           ...s,
           value: e.target.value,
-          isValid: validate && isFunction(validate) ? validate(e.target.value) : false,
+          isValid:
+            validate && isFunction(validate) ? validate(e.target.value) : false,
         };
         if (runOnChange && isFunction(runOnChange)) runOnChange(newState);
         return newState;
@@ -51,7 +57,11 @@ export function createInput(formStore) {
 
     const focus = useCallback((e) => {
       if (runOnFocus && isFunction(runOnFocus)) runOnFocus(e);
-      setInputState((s) => ({ ...s, touched: true }));
+      if (!touched.current) {
+        touched.current = true;
+        if (runOnTouch && isFunction(runOnTouch)) runOnTouch(e);
+        setInputState((s) => ({ ...s, touched: true }));
+      }
     }, []);
 
     const [inputState, _setInputState] = useState({
@@ -62,16 +72,17 @@ export function createInput(formStore) {
       onFocus: focus,
     });
 
-    const setInputState = useCallback((val) => {
-      // write to input in map while react state updates
-      _setInputState((s) => {
-        const newState = (typeof val === "function") ? val(s) : val;
-        if (key.current) formStore.inputs.set(key.current, newState);
-        return newState;
-      });
-    }, []);
-
-    const key = useRef(null);
+    const setInputState = useCallback(
+      (val) => {
+        // write to input in map while react state updates
+        _setInputState((s) => {
+          const newState = typeof val === "function" ? val(s) : val;
+          if (key.current) formStore.inputs.set(key.current, newState);
+          return newState;
+        });
+      },
+      [key, formStore]
+    );
 
     //!! probs not needed. test with a dynamic classname
     // useEffect(() => {

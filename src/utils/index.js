@@ -2,8 +2,8 @@ import { createForm, createInput } from "../components";
 import { createDefaultFormOptions } from "../types";
 
 // dynamic instances for new form components
-//!! Might have to gen copy of map every new form
-//!! store instance. Mutate copy to keep hooks pure.
+//!! gen copy of map every new form store instance.
+//!! Mutate copy.
 export let FORM_STORE_INSTANCES = new Map();
 // pointer for mutation
 let NEXT_FORM_STORE_INSTANCES = FORM_STORE_INSTANCES;
@@ -67,20 +67,16 @@ export const GEN_FORM_STORE = (stateOverloads) => {
     stable_store.inputs = stable_store._next_inputs;
   };
 
-  // _write_input_value: function (key, prevRef, event) {
-  //   const i = stable_store.inputs.get(key)
-  //   const updated = {...prevRef, value: event.target.value, isValid:}
-  //   i.value = value
-  // }
+  stable_store._input_writes_to_map = function (key) {};
 
   stable_store.resetForm = () => resetFormValues(stable_store.inputs);
 
   stable_store.getFormValues = () => getFormValues(stable_store.inputs);
 
-  stable_store.getFormStore = () => {
-    console.log(stable_store.formId);
-    return FORM_STORE_INSTANCES.get(stable_store.formId);
-  };
+  stable_store.getFormInputs = () => getFormInputs(stable_store.inputs);
+
+  stable_store.getFormStore = () =>
+    FORM_STORE_INSTANCES.get(stable_store.formId);
 
   stable_store.isFormValid = () =>
     validateForm(FORM_STORE_INSTANCES.get(stable_store.formId).inputs);
@@ -103,68 +99,11 @@ export const GEN_FORM_STORE = (stateOverloads) => {
   return stable_store;
 };
 
-//!! HOOKS !!//
-
-export function useCreateFormStore(stateOverloads = {}) {
-  const STORE = genStore();
-  // const [id] = useState(GEN_FORM_ID)
-  // const [STORE, setSTORE] = useState(
-  //   GEN_FORM_STORE(stateOverloads, id)
-  //   //   () => {
-  //   //   console.warn("useState init function running")
-  //   //   return () => {
-  //   //     console.error("<<---running init closure--->>")
-  //   //     GEN_FORM_STORE(stateOverloads);
-  //   //   }
-  //   // }
-  // );
-  // const [getFormStore] = useState(() => () => FORM_STORE_INSTANCES.get(id))
-
-  //form config setup
-  // useEffect(() => {
-  //   if(!STORE){
-  //     const store = GEN_FORM_STORE(stateOverloads, id)
-  //     setSTORE(store)
-  //   }
-
-  //   console.log(
-  //     "UE IN useCreateFormStore invoked, FORM_STORE_INSTANCES, STORE: ",
-  //     FORM_STORE_INSTANCES,
-  //     id,
-  //     STORE
-  //   );
-
-  //   return () => {
-  //     // if (STORE) {
-  //     //   GEN_MUTABLE_STORE();
-  //     //   NEXT_FORM_STORE_INSTANCES.delete(id);
-  //     //   FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
-  //     //   console.warn(
-  //     //     "**RETURN** IN UE invoked, FORM_STORE_INSTANCES, STORE: ",
-  //     //     FORM_STORE_INSTANCES,
-  //     //     id,
-  //     //     STORE
-  //     //   );
-  //     // }
-  //   };
-  // }, [STORE]);
-
-  console.log(
-    "useCreateFormStore invoked, id, STORE: ",
-    // id,
-    STORE()
-  );
-
-  // return { formId: id, getFormStore, ...STORE}; // -> stable ref
-  return STORE();
-}
-
 //assign stable refs to hooks and insulate from rerenders
 export const genStore = (stateOverloads) => {
   let unique_store = null;
   return () => {
     if (!unique_store) unique_store = GEN_FORM_STORE(stateOverloads);
-    console.log("useGenStore invoked, unique_store: ", unique_store);
     return unique_store;
   };
 };
@@ -192,18 +131,23 @@ export const useStableRef = (value) => createStableRef(value);
 // !! param is a map
 export const resetFormValues = (inputs) => {
   inputs.forEach((input) => {
-    console.log("resetFormValues, input: ", input)
-    input.setter((s) => ({ ...s, value: input.initialInputValue, isValid: false }));
+    if (input.setter)
+      input.setter((s) => ({
+        ...s,
+        value: input.initialInputValue,
+        isValid: false,
+      }));
   });
 };
 
 // return input values of specific form
 export const getFormValues = (inputs) =>
-  Array.from(inputs.entries()).reduce((s, [id, input]) => {
-    s[id] = input.value;
-    return s;
+  Array.from(inputs).reduce((acc, [id, input]) => {
+    acc[id] = input.value;
+    return acc;
   }, {});
+
+export const getFormInputs = (inputs) => Object.fromEntries(inputs);
 
 export const validateForm = (inputs) =>
   Array.from(inputs.entries()).every(([, input]) => input.isValid);
-
