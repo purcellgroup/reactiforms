@@ -75,6 +75,8 @@ export const GEN_FORM_STORE = (stateOverloads) => {
 
   stable_store.getFormInputs = () => getFormInputs(stable_store.inputs);
 
+  stable_store.getInput = (id) => stable_store.inputs.get(id)
+
   stable_store.getFormStore = () =>
     FORM_STORE_INSTANCES.get(stable_store.formId);
 
@@ -147,7 +149,16 @@ export const getFormValues = (inputs) =>
     return acc;
   }, {});
 
-export const getFormInputs = (inputs) => Object.fromEntries(inputs);
+export const getFormInputs = (inputs) => {
+  if (inputs.size) {
+    return Object.fromEntries(inputs);
+  } else {
+    console.warn(
+      "Either this Form has no Input children or `getFormInputs` is running before the Form's Inputs are registered. \n"
+    );
+    return {};
+  }
+};
 
 export const validateForm = (inputs) =>
   Array.from(inputs.entries()).every(([, input]) => input.isValid);

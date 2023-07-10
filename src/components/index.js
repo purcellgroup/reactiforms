@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createDefaultInputOptions } from "../types";
 
 export function createForm(formInstance) {
@@ -10,6 +10,7 @@ export function createForm(formInstance) {
           e.preventDefault();
           e.inputValues = formInstance.getFormValues();
           e.formData = formInstance;
+
           if (onSubmit && isFunction(onSubmit)) {
             onSubmit(e);
           } else {
@@ -35,6 +36,8 @@ export function createInput(formStore) {
       runOnChange,
       runOnFocus,
       runOnTouch,
+      runOnBlur,
+      runOnInvalid,
       validate,
       ...restOfProps
     } = props;
@@ -43,18 +46,17 @@ export function createInput(formStore) {
     // handler overrides
     const change = useCallback((e) => {
       // use fresh react state for runOnChange
+      if (runOnChange && isFunction(runOnChange)) runOnChange(e.target.value);
       setInputState((s) => {
         const newState = {
           ...s,
           value: e.target.value,
-          isValid:
-            validate && isFunction(validate) ? validate(e.target.value) : false,
         };
-        if (runOnChange && isFunction(runOnChange)) runOnChange(newState);
         return newState;
       });
     }, []);
 
+    
     const focus = useCallback((e) => {
       if (runOnFocus && isFunction(runOnFocus)) runOnFocus(e);
       if (!touched.current) {
@@ -63,13 +65,26 @@ export function createInput(formStore) {
         setInputState((s) => ({ ...s, touched: true }));
       }
     }, []);
-
+    
+    const blur = useCallback((e) => {
+      setInputState((s) => {
+        const newState = {
+          ...s,
+          isValid: validate && isFunction(validate) ? validate(inputState.value) : false,
+        };
+        console.log("blur, newState: ", newState)
+        if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState);
+        return newState
+      });
+    }, []);
+    
     const [inputState, _setInputState] = useState({
       ...defaultInputOptions,
       ...props,
       value: initialInputValue || "",
       onChange: change,
       onFocus: focus,
+      onBlur: blur
     });
 
     const setInputState = useCallback(
@@ -119,8 +134,10 @@ export function createInput(formStore) {
     return (
       <input
         value={inputState.value}
-        onChange={inputState.onChange}
-        onFocus={inputState.onFocus}
+        onChange={change}
+        onFocus={focus}
+        onBlur={blur}
+        onInvalid={runOnInvalid}
         {...restOfProps}
       />
     );

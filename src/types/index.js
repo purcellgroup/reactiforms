@@ -32,5 +32,7 @@ export const createDefaultInputOptions = () => ({
   runOnFocus: null,
   runOnTouch: null,
   runOnBlur: null,
+  runOnInvalid: null,
   setter: null,
+  debounce: 1300
 });
