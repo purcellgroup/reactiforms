@@ -72,7 +72,6 @@ export function createInput(formStore) {
           ...s,
           isValid: validate && isFunction(validate) ? validate(inputState.value) : false,
         };
-        console.log("blur, newState: ", newState)
         if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState);
         return newState
       });
