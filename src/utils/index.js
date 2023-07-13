@@ -75,7 +75,7 @@ export const GEN_FORM_STORE = (stateOverloads) => {
 
   stable_store.getFormInputs = () => getFormInputs(stable_store.inputs);
 
-  stable_store.getInput = (id) => stable_store.inputs.get(id)
+  stable_store.getInput = (id) => stable_store.inputs.get(id);
 
   stable_store.getFormStore = () =>
     FORM_STORE_INSTANCES.get(stable_store.formId);
@@ -86,6 +86,21 @@ export const GEN_FORM_STORE = (stateOverloads) => {
   stable_store.Input = createInput(stable_store);
 
   stable_store.Form = createForm(stable_store);
+
+  // utility hook to rerender HOCs for Inputs
+  stable_store.useInput = (inputId) => {
+    const [i, setI] = useState(null);
+    const inputLoaded = useRef(null);
+
+    useEffect(() => {
+      if (!inputLoaded.current) {
+        const loadStore = stable_store.inputs.get(inputId)
+        setI(loadStore);
+        inputLoaded.current = loadStore
+      }
+    }, []);
+    return i;
+  };
 
   stable_store.unsubscribe = () => {
     GEN_MUTABLE_STORE();
@@ -109,6 +124,7 @@ export const genStore = (stateOverloads) => {
     return unique_store;
   };
 };
+
 export const createFormStore = (initialFormOptions) => {
   const store = genStore(initialFormOptions);
   return store();

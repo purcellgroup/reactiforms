@@ -27,6 +27,8 @@ export function createForm(formInstance) {
   };
 }
 
+//!! MIGRATE TO PUB SUB PATTERN for dependents to update
+
 export function createInput(formStore) {
   const defaultInputOptions = createDefaultInputOptions();
   return function (props) {
