@@ -178,3 +178,4 @@ export const getFormInputs = (inputs) => {
 
 export const validateForm = (inputs) =>
   Array.from(inputs.entries()).every(([, input]) => input.isValid);
+

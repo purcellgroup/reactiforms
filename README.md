@@ -67,6 +67,16 @@ You may configure these properties by giving `createFormStore` an initial option
 
 ### Available Input properties
 
-Props accepted by the Input wrapper component. These are props utilized by the wrapper itself, and all props not listed here will be passed into the `input` primitive. Expect a React warning if using a prop not listed.
+Input component prop default values below. Props not listed here will be passed into the `input` primitive. Expect a React warning if using a prop not listed.
 
-  - ``: 
+  - `inputKey`: `null` Used as an internal identifier. Borrows the value of `id` if there is one, otherwise will be assigned a counter value.
+  - `type`: `text`
+  - `name`: `""`
+  - `touched`: `false`
+  - `isValid`: `false`
+  - `initialInputValue`: `""`
+  - `validate`: `null`
+  - `runOnChange`: `null`
+  - `runOnFocus`: `null`
+  - `runOnBlur`: `null`
+  - `runOnInvalid`: `null` 

@@ -20,7 +20,6 @@ export const createDefaultInputOptions = () => ({
   className: "",
   inputName: "",
   inputKey: null,
-  disabled: false,
   type: "text",
   name: "",
   touched: false,
@@ -35,3 +34,4 @@ export const createDefaultInputOptions = () => ({
   setter: null,
   debounce: 1300
 });
+
