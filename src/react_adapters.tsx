@@ -3,11 +3,18 @@ import React, {
   useEffect,
   useCallback,
   useRef,
-  InputHTMLAttributes,
-  FC,
   ReactElement,
 } from "react";
-import { Form, createDefaultInputOptions, subscribeToInput, broadcastToSubscribers, registerInput, updateInputMap } from "./core";
+import {
+  // Form,
+  createDefaultInputOptions,
+  broadcastToSubscribers,
+  registerInput,
+  updateInputMap,
+  getInput,
+  subscribeToInput,
+} from "./core";
+// import type { getInput, subscribeToInput } from "./core";
 import {
   DefaultInput,
   FormComponent,
@@ -32,7 +39,7 @@ export function FormFactory(formInstance: FormInstance): FormComponent {
           e.preventDefault();
 
           if (onSubmit && isFunction(onSubmit)) {
-            onSubmit(e, formInstance.getFormValues(), formInstance);
+            onSubmit(e, formInstance.getFormValues());
           } else {
             formInstance.options.handleSubmit();
           }
@@ -88,7 +95,7 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
       validate,
       ...restOfProps
     } = props;
-    const key = useRef<null | string | number>(null);
+    const key = useRef<null | string | number>(props.id ?? null);
     const touched = useRef<null | boolean>(null);
     // handler overrides
     const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +152,7 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
         _setInputState((s: Input): Input => {
           // callbacks are expected to return an Input type
           const newState = typeof val === "function" ? val(s) : val;
-          if (key.current) updateInputMap(key.current, newState)
+          if (key.current !== null) updateInputMap(key.current, newState);
           return newState;
         });
       },
@@ -160,7 +167,7 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
     useEffect(() => {
       // registers this input
       let registeredInput: UnregisterInput;
-      if (!key.current) {
+      if (key.current === null) {
         if (props.id) {
           registeredInput = registerInput(props.id, inputState);
           key.current = props.id;
@@ -168,13 +175,13 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
           registeredInput = registerInput(null, inputState);
           key.current = registeredInput.newInputId;
         }
-      }
 
-      setInputState((s) => ({
-        ...s,
-        setter: setInputState,
-        inputKey: key.current,
-      }));
+        setInputState((s) => ({
+          ...s,
+          setter: setInputState,
+          inputKey: key.current,
+        }));
+      }
 
       //cleanup input from form instance
       return () => {
@@ -191,7 +198,7 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
         onChange={change}
         onFocus={focus}
         onBlur={blur}
-        onInvalid={runOnInvalid}
+        onInvalid={runOnInvalid ?? undefined}
         {...restOfProps}
       />
     );
@@ -199,20 +206,23 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
 }
 
 // utility hook to rerender HOCs for Inputs
-export function _useInput({ getInput, subscribeToInput, unsubscribeToInput }) {
+export function _useInput(
+  get_input: typeof getInput,
+  subscribe: typeof subscribeToInput
+) {
   return function (inputId: string) {
-    const _subscribed = useRef(false);
-    const [i, setI] = useState(() => getInput(inputId));
+    const subscribed = useRef(false);
+    const [i, setI] = useState(() => get_input(inputId));
 
-    if (!_subscribed.current) {
-      subscribeToInput(inputId, setI);
-      _subscribed.current = true;
-    }
+    // if (!_subscribed.current) {
+    // }
 
     useEffect(() => {
+      const unsubscribe = subscribe(inputId, setI);
+      subscribed.current = true;
+
       return () => {
-        unsubscribeToInput(inputId);
-        _subscribed.current = false;
+        unsubscribe(inputId);
       };
     }, []);
 
@@ -220,7 +230,27 @@ export function _useInput({ getInput, subscribeToInput, unsubscribeToInput }) {
   };
 }
 
-const isFunction = (fn: any): fn is Function => {
+export function useInput(inputId: string) {
+  const subscribed = useRef(false);
+  const [i, setI] = useState(() => getInput(inputId));
+
+  useEffect(() => {
+    let unsubscribe: (inputId: string) => void;
+
+    if (!subscribed.current) {
+      unsubscribe = subscribeToInput(inputId, setI);
+      subscribed.current = true;
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe(inputId);
+    };
+  }, []);
+
+  return i;
+}
+
+export const isFunction = (fn: any): fn is Function => {
   if (typeof fn === "function") return true;
   console.error(new Error("Optional handlers must be functions."));
   return false;

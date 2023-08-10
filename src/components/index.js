@@ -58,7 +58,6 @@ export function createInput(formStore) {
       });
     }, []);
 
-    
     const focus = useCallback((e) => {
       if (runOnFocus && isFunction(runOnFocus)) runOnFocus(e);
       if (!touched.current) {
@@ -67,25 +66,28 @@ export function createInput(formStore) {
         setInputState((s) => ({ ...s, touched: true }));
       }
     }, []);
-    
+
     const blur = useCallback((e) => {
       setInputState((s) => {
         const newState = {
           ...s,
-          isValid: validate && isFunction(validate) ? validate(inputState.value) : false,
+          isValid:
+            validate && isFunction(validate)
+              ? validate(inputState.value)
+              : false,
         };
         if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState);
-        return newState
+        return newState;
       });
     }, []);
-    
+
     const [inputState, _setInputState] = useState({
       ...defaultInputOptions,
       ...props,
       value: initialInputValue || "",
       onChange: change,
       onFocus: focus,
-      onBlur: blur
+      onBlur: blur,
     });
 
     const setInputState = useCallback(

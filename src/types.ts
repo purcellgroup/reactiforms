@@ -6,7 +6,7 @@ import React, {
   ReactElement,
   InputHTMLAttributes,
 } from "react";
-import type { Form } from "./core";
+// import type { Form } from "./core";
 
 export type Input = DefaultInput & InputHTMLAttributes<HTMLInputElement>;
 
@@ -17,7 +17,7 @@ export interface MutationAction {
 }
 
 export interface UnregisterInput {
-  newInputId: number | null;
+  newInputId: number | string;
   unregister: (key: string | number) => void;
 }
 
@@ -25,7 +25,7 @@ export interface DefaultInput {
   id: string;
   className: string;
   inputName: string;
-  inputKey: null;
+  inputKey: null | string | number;
   type: string;
   name: string;
   touched: boolean;
@@ -50,16 +50,17 @@ export interface DefaultInput {
 }
 
 export interface FormInstance {
-  formId: number;
+  // formId: number;
   options: DefaultForm & Record<string, any>;
   resetForm: () => void;
   getFormValues: () => FormValues;
   getFormInputs: () => Record<string, Input> | Record<string, never>;
-  getInput: (id: string) => Input;
+  getInput: (id: any) => Input | undefined;
   isFormValid: () => boolean;
-  Input: InputComponent;
-  Form: FormComponent;
   _inputMap: () => Map<string | number, Input>;
+  Input?: InputComponent;
+  Form?: FormComponent;
+  // useInput?: (arg0: any) => Input | undefined;
 }
 
 export interface DefaultForm {
@@ -71,7 +72,7 @@ export interface DefaultForm {
 }
 
 export interface FormValues {
-  [k: string]: string;
+  [k: string]: string | number | readonly string[] | undefined;
 }
 
 export interface FormInputs {
@@ -83,7 +84,7 @@ export interface FormInputs {
 export type FormComponent = (
   props: {
     children: ReactNode;
-    onSubmit?: (e: SyntheticEvent, v: FormValues, f: Form) => void;
+    onSubmit?: (e: SyntheticEvent, v: FormValues) => void;
   } & HTMLProps<HTMLFormElement>
 ) => React.ReactElement;
 
