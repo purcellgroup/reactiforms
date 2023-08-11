@@ -97,6 +97,7 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
     } = props;
     const key = useRef<null | string | number>(props.id ?? null);
     const touched = useRef<null | boolean>(null);
+    const unregisterInput = useRef<UnregisterInput | null>(null);
     // handler overrides
     const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       // use fresh react state for runOnChange
@@ -164,6 +165,22 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
     //   setInputState((s) => ({ ...s, ...props }));
     // }, [props]);
 
+    if (unregisterInput.current === null) {
+      if (props.id) {
+        unregisterInput.current = registerInput(props.id, inputState);
+        key.current = props.id;
+      } else {
+        unregisterInput.current = registerInput(null, inputState);
+        key.current = unregisterInput.current.newInputId;
+      }
+
+      setInputState((s) => ({
+        ...s,
+        setter: setInputState,
+        inputKey: key.current,
+      }));
+    }
+
     useEffect(() => {
       // registers this input
       let registeredInput: UnregisterInput;
@@ -185,9 +202,9 @@ export function InputFactory(formInstance: FormInstance): InputComponent {
 
       //cleanup input from form instance
       return () => {
-        if (key.current) {
-          const { unregister } = registeredInput;
-          unregister(key.current);
+        if (unregisterInput.current) {
+          const { unregister, newInputId } = unregisterInput.current;
+          unregister(newInputId);
         }
       };
     }, []);

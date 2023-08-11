@@ -42,6 +42,11 @@ let inputCounter: number = 0;
 let inputs = new Map<string | number, Input>();
 let nextInputs = new Map<string | number, Input>();
 
+//! debugging only
+export function inspectInputMap() {
+  return inputs
+}
+
 const mutate_global_inputs = ({ action, key, newInput }: MutationAction) => {
   // only one function can mutate global inputs
   // map values must always be type Input
