@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useRef,
   ReactElement,
+  BaseSyntheticEvent,
 } from "react";
 import {
   // Form,
@@ -35,11 +36,15 @@ export function FormFactory(formInstance: FormInstance): FormComponent {
     // todo: create suspense
     return (
       <form
-        onSubmit={(e) => {
+        onSubmit={(e: BaseSyntheticEvent) => {
           e.preventDefault();
 
           if (onSubmit && isFunction(onSubmit)) {
-            onSubmit(e, formInstance.getFormValues());
+            const values = Array.from(e.target.children).reduce((acc, child, idx) => {
+              if(child.localName !== "input") return acc
+              return ({ ...acc, [child.id]: child.value })
+            }, {})
+            onSubmit(e, values);
           } else {
             formInstance.options.handleSubmit();
           }

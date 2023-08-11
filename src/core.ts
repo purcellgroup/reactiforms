@@ -44,7 +44,7 @@ let nextInputs = new Map<string | number, Input>();
 
 //! debugging only
 export function inspectInputMap() {
-  return inputs
+  console.log("inspecting inputs: ", inputs)
 }
 
 const mutate_global_inputs = ({ action, key, newInput }: MutationAction) => {
