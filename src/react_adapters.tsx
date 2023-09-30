@@ -5,6 +5,7 @@ import React, {
   useRef,
   ReactElement,
   BaseSyntheticEvent,
+  useMemo,
 } from "react";
 import {
   // Form,
@@ -25,36 +26,55 @@ import {
   UnregisterInput,
 } from "./types";
 
-export function FormFactory(formInstance: FormInstance): FormComponent {
-  // if (!(formInstance instanceof FormInstance)) {
-  //   throw new Error(
-  //     "Internal Error: Form instance invalid. Something is *really* wrong"
-  //   );
-  // }
+// export function FormFactory(formInstance: FormInstance): FormComponent {
+//   // if (!(formInstance instanceof FormInstance)) {
+//   //   throw new Error(
+//   //     "Internal Error: Form instance invalid. Something is *really* wrong"
+//   //   );
+//   // }
 
-  return function ({ children, onSubmit, ...props }): ReactElement {
-    // todo: create suspense
+//   return function ({ children, onSubmit, ...props }): ReactElement {
+//     // todo: create suspense
+//     return (
+//       <form
+//         onSubmit={(e: BaseSyntheticEvent) => {
+//           e.preventDefault();
+
+//           if (onSubmit && isFunction(onSubmit)) {
+//             const values = Array.from(e.target.children).reduce((acc, child, idx) => {
+//               if(child.localName !== "input") return acc
+//               return ({ ...acc, [child.id]: child.value })
+//             }, {})
+//             onSubmit(e, values);
+//           } else {
+//             formInstance.options.handleSubmit();
+//           }
+
+//           formInstance.resetForm();
+//         }}
+//         {...props}
+//       >
+//         {children}
+//       </form>
+//     );
+//   };
+// }
+
+export function FormFactory() {
+  const formContext = React.createContext({});
+
+  return function FormProvider({ children }: { children: React.ReactNode }) {
+    const inputMap = useMemo(() => new Map<string | number, Input>(), []);
+    const subscriberMap = new Map<
+      string | number,
+      Set<React.Dispatch<Input>>
+    >();
+    const formStore = useMemo(() => ({
+      inputMap,
+      subscriberMap,
+    }), []);
     return (
-      <form
-        onSubmit={(e: BaseSyntheticEvent) => {
-          e.preventDefault();
-
-          if (onSubmit && isFunction(onSubmit)) {
-            const values = Array.from(e.target.children).reduce((acc, child, idx) => {
-              if(child.localName !== "input") return acc
-              return ({ ...acc, [child.id]: child.value })
-            }, {})
-            onSubmit(e, values);
-          } else {
-            formInstance.options.handleSubmit();
-          }
-
-          formInstance.resetForm();
-        }}
-        {...props}
-      >
-        {children}
-      </form>
+      <formContext.Provider value={formStore}>{children}</formContext.Provider>
     );
   };
 }

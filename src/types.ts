@@ -51,15 +51,15 @@ export interface DefaultInput {
 
 export interface FormInstance {
   // formId: number;
-  options: DefaultForm & Record<string, any>;
+  // options: DefaultForm & Record<string, any>;
   resetForm: () => void;
   getFormValues: () => FormValues;
   getFormInputs: () => Record<string, Input> | Record<string, never>;
   getInput: (id: any) => Input | undefined;
   isFormValid: () => boolean;
-  _inputMap: () => Map<string | number, Input>;
-  Input?: InputComponent;
-  Form?: FormComponent;
+  // _inputMap: () => Map<string | number, Input>;
+  Input: InputComponent;
+  Form: FormComponent;
   // useInput?: (arg0: any) => Input | undefined;
 }
 
