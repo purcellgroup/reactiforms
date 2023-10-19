@@ -7,16 +7,8 @@ import React, {
   BaseSyntheticEvent,
   useMemo,
   useContext,
+  Dispatch,
 } from "react";
-// import type { getInput, subscribeToInput } from "./core";
-// import {
-//   DefaultInput,
-//   FormComponent,
-//   FormInstance,
-//   Input,
-//   InputComponent,
-//   UnregisterInput,
-// } from "./types";
 import {
   DefaultForm,
   Input,
@@ -28,14 +20,16 @@ import {
   FormInstance,
   FormInstance,
   FormInstance,
+  InputComponent,
+  FormContext,
 } from "./types";
 // import { _useInput, InputFactory, FormFactory } from "./react_adapters";
 
 // copy of store for mutations
-// export let FORM_STORE_INSTANCES: Map<number, Form> = new Map();
+export let FORM_STORE_INSTANCES: Map<number, Form> = new Map();
 // let NEXT_FORM_STORE_INSTANCES: Map<number, Form> = FORM_STORE_INSTANCES;
 
-// let FORM_COUNTER = 0;
+let FORM_COUNTER = 0;
 
 // const UNSUB_FORM = (formId: number) => {
 //   GEN_MUTABLE_STORE();
@@ -64,114 +58,114 @@ let inputs = new Map<string | number, Input>();
 let nextInputs = new Map<string | number, Input>();
 
 //! debugging only
-export function inspectInputMap() {
-  console.log("inspecting inputs: ", inputs);
-}
+// export function inspectInputMap() {
+//   console.log("inspecting inputs: ", inputs);
+// }
 
-const mutate_global_inputs = ({ action, key, newInput }: MutationAction) => {
-  // only one function can mutate global inputs
-  // map values must always be type Input
-  // fail loud
+// const mutate_global_inputs = ({ action, key, newInput }: MutationAction) => {
+//   // only one function can mutate global inputs
+//   // map values must always be type Input
+//   // fail loud
 
-  try {
-    switch (action) {
-      case "add": {
-        if (!newInput) throw Error("adding input with no newInput");
-        const newInputCount = inputCounter + 1;
+//   try {
+//     switch (action) {
+//       case "add": {
+//         if (!newInput) throw Error("adding input with no newInput");
+//         const newInputCount = inputCounter + 1;
 
-        // handle no given key
-        if (key !== null) {
-          inputs.set(key, newInput);
-        } else {
-          inputs.set(newInputCount, newInput);
-        }
+//         // handle no given key
+//         if (key !== null) {
+//           inputs.set(key, newInput);
+//         } else {
+//           inputs.set(newInputCount, newInput);
+//         }
 
-        inputCounter = newInputCount;
-        return key ?? newInputCount;
-      }
-      case "delete": {
-        if (key === null) throw Error("null key");
-        const newInputCount = inputCounter - 1;
-        inputs.delete(key);
-        inputCounter = newInputCount;
-        return newInputCount;
-      }
-      case "update": {
-        if (!newInput || key === null) throw Error("invalid data in update");
-        inputs.set(key, newInput);
-        return key;
-      }
-      default:
-        throw Error(`Invalid Action: "${action}"`);
-    }
-  } catch (error) {
-    throw new Error("mutation failed in `mutate_global_inputs`");
-  }
-};
+//         inputCounter = newInputCount;
+//         return key ?? newInputCount;
+//       }
+//       case "delete": {
+//         if (key === null) throw Error("null key");
+//         const newInputCount = inputCounter - 1;
+//         inputs.delete(key);
+//         inputCounter = newInputCount;
+//         return newInputCount;
+//       }
+//       case "update": {
+//         if (!newInput || key === null) throw Error("invalid data in update");
+//         inputs.set(key, newInput);
+//         return key;
+//       }
+//       default:
+//         throw Error(`Invalid Action: "${action}"`);
+//     }
+//   } catch (error) {
+//     throw new Error("mutation failed in `mutate_global_inputs`");
+//   }
+// };
 
 //!! this code is a mini clone of Redux...
-const inputSubscribers = new Map<string | number, Set<React.Dispatch<Input>>>();
+// const inputSubscribers = new Map<string | number, Set<React.Dispatch<Input>>>();
 
-export const subscribeToInput = (
-  key: string | number,
-  dispatch: React.Dispatch<Input>
-) => {
-  const subscriberSet = inputSubscribers.get(key);
-  if (subscriberSet) subscriberSet.add(dispatch);
+// export const subscribeToInput = (
+//   key: string | number,
+//   dispatch: React.Dispatch<Input>
+// ) => {
+//   const subscriberSet = inputSubscribers.get(key);
+//   if (subscriberSet) subscriberSet.add(dispatch);
 
-  // unsubscribe to input
-  return (key: string | number) => {
-    inputSubscribers.delete(key);
-  };
-};
+//   // unsubscribe to input
+//   return (key: string | number) => {
+//     inputSubscribers.delete(key);
+//   };
+// };
 
-export const broadcastToSubscribers = (key: string | number) => {
-  const inputSet = inputSubscribers.get(key);
-  const inputVal = inputs.get(key);
-  if (inputSet && inputVal) {
-    inputSet.forEach((dispatch) => dispatch(inputVal));
-  }
-};
+// export const broadcastToSubscribers = (key: string | number) => {
+//   const inputSet = inputSubscribers.get(key);
+//   const inputVal = inputs.get(key);
+//   if (inputSet && inputVal) {
+//     inputSet.forEach((dispatch) => dispatch(inputVal));
+//   }
+// };
 
-export const registerInput = (
-  key: number | string | null,
-  input: Input
-): UnregisterInput => {
-  const inputId = mutate_global_inputs({ action: "add", key, newInput: input });
+// export const registerInput = (
+//   key: number | string | null,
+//   input: Input
+// ): UnregisterInput => {
+//   const inputId = mutate_global_inputs({ action: "add", key, newInput: input });
 
-  //unregister input from map
-  return {
-    newInputId: inputId,
-    unregister: (key: number | string) =>
-      mutate_global_inputs({ action: "delete", key }),
-  };
-};
+//   //unregister input from map
+//   return {
+//     newInputId: inputId,
+//     unregister: (key: number | string) =>
+//       mutate_global_inputs({ action: "delete", key }),
+//   };
+// };
 
-export const updateInputMap = (key: number | string, newState: Input) => {
-  mutate_global_inputs({ action: "update", key, newInput: newState });
-};
+// export const updateInputMap = (key: number | string, newState: Input) => {
+//   mutate_global_inputs({ action: "update", key, newInput: newState });
+// };
 
-export function FormInstance(config: Record<string, any>): FormInstance {
-  return {
-    // formId: GEN_FORM_ID(),
-    options: GEN_FORM_OPTIONS(config),
-    _inputMap: (): typeof inputs => inputs,
-    resetForm: () => resetFormValues(inputs),
-    getFormValues: () => getFormValues(inputs),
-    getFormInputs: () => getFormInputs(inputs),
-    isFormValid: () => validateForm(inputs),
-    getInput,
-    ...config,
-  };
-}
+// export function FormInstance(config: Record<string, any>): FormInstance {
+//   return {
+//     // formId: GEN_FORM_ID(),
+//     options: GEN_FORM_OPTIONS(config),
+//     _inputMap: (): typeof inputs => inputs,
+//     resetForm: () => resetFormValues(inputs),
+//     getFormValues: () => getFormValues(inputs),
+//     getFormInputs: () => getFormInputs(inputs),
+//     isFormValid: () => validateForm(inputs),
+//     getInput,
+//     ...config,
+//   };
+// }
 
-export function createForm(config: Record<string, any>): FormInstance {
-  const form = FormInstance(config);
-  form.Input = InputFactory(form);
-  form.Form = FormFactory(form);
-  // form.useInput = _useInput(getInput, subscribeToInput);
-  return form;
-}
+// export function createForm(config: Record<string, any>): FormInstance {
+//   const form = FormInstance(config);
+//   form.Input = InputFactory(form);
+//   form.Form = FormFactory(form);
+//   // form.useInput = _useInput(getInput, subscribeToInput);
+//   return form;
+// }
 
 // export class Form {
 //   public formId: number;
@@ -256,10 +250,10 @@ export function createForm(config: Record<string, any>): FormInstance {
 //   }
 // }
 
-// const GEN_FORM_ID = () => {
-//   ++FORM_COUNTER;
-//   return FORM_COUNTER;
-// };
+const GEN_FORM_ID = () => {
+  ++FORM_COUNTER;
+  return FORM_COUNTER;
+};
 
 const GEN_FORM_OPTIONS = (
   config: Record<string, any>
@@ -436,49 +430,66 @@ export class Form {
   private inputCounter: number;
   private inputMap: Map<string | number, Input>;
   private subscriberMap: Map<string | number, Set<React.Dispatch<Input>>>;
-  private FormContext: React.Context<Record<string, any>>;
+  private FormContext: React.Context<FormContext>;
 
   constructor() {
     this.inputCounter = 0;
-    this.inputMap = useMemo(() => new Map<string | number, Input>(), []);
-    this.subscriberMap = new Map<string | number, Set<React.Dispatch<Input>>>();
-    this.FormContext = React.createContext({});
+    this.inputMap = new Map();
+    this.subscriberMap = new Map();
+    this.FormContext = React.createContext({} as FormContext);
   }
 
   useFormContext() {
     return React.useContext(this.FormContext);
   }
 
-  registerInput = (
-    key: number | string | null,
-    input: Input
-  ): UnregisterInput => {
+  registerInput(key: number | string | null, input: Input): UnregisterInput {
     const inputId = key ?? this.inputCounter + 1;
+    this.inputMap.set(inputId, input);
+    this.subscriberMap.set(inputId, new Set());
 
-    //unregister input from map
+    //unregister input
     return {
       newInputId: inputId,
-      unregister: (key: number | string) =>
-        mutate_global_inputs({ action: "delete", key }),
+      unregister: (key: number | string) => {
+        const inputMapError = !this.inputMap.delete(key);
+        const subMapError = !this.subscriberMap.delete(key);
+        if (inputMapError || subMapError)
+          throw new Error("Unregister Error: Input does not exist.");
+      },
     };
-  };
+  }
+
+  updateInput(key: string | number, newInput: Input) {
+    if (!newInput || key === null)
+      throw Error("Invalid data while updating inputMap");
+    this.inputMap.set(key, newInput);
+    return key;
+  }
 
   subscribeToInput(key: string | number, dispatch: React.Dispatch<Input>) {
-    const subscriberSet = inputSubscribers.get(key);
-    if (subscriberSet) subscriberSet.add(dispatch);
+    const subscriberSet = this.subscriberMap.get(key);
+
+    if (!subscriberSet)
+      throw new Error("Subscribe Error: subscriber map failed");
+
+    subscriberSet.add(dispatch);
 
     // unsubscribe to input
-    return (key: string | number) => {
-      inputSubscribers.delete(key);
+    return (dispatch: React.Dispatch<Input>) => {
+      const fail = subscriberSet.delete(dispatch);
+      if (fail) throw new Error("Failed unsubscribing from input.");
     };
   }
 
   broadcastToSubscribers(key: string | number) {
-    const inputSet = inputSubscribers.get(key);
-    const inputVal = inputs.get(key);
-    if (inputSet && inputVal) {
-      inputSet.forEach((dispatch) => dispatch(inputVal));
-    }
+    const inputSet = this.subscriberMap.get(key);
+    const inputVal = this.inputMap.get(key);
+
+    if (!inputSet || !inputVal)
+      throw new Error("Broadcast Error: Input not found.");
+
+    inputSet.forEach((dispatch) => dispatch(inputVal));
   }
 
   resetForm() {
@@ -530,6 +541,8 @@ export class Form {
         value={{
           inputMap: this.inputMap,
           subscriberMap: this.subscriberMap,
+          updateInput: this.updateInput,
+          registerInput: this.registerInput,
           subscribeToInput: this.subscribeToInput,
           broadcastToSubscribers: this.broadcastToSubscribers,
         }}
@@ -541,13 +554,8 @@ export class Form {
 
   // TODO: adjust input factory for new form instance
   // todo: needs form properties and input register
-  createInput() {
-    return InputFactory({
-      useFormContext: this.useFormContext,
-      inputMap: this.inputMap,
-      subscriberMap: this.subscriberMap,
-    })
-  }
+  createInput = () => InputFactory(this.useFormContext);
+  
 
   createForm(): FormInstance {
     return {
@@ -564,11 +572,9 @@ export class Form {
 
 //!! MIGRATE TO PUB SUB PATTERN for dependents to update
 
-export function InputFactory({
-  useFormContext,
-  inputMap,
-  subscriberMap,
-}): InputComponent {
+export function InputFactory(
+  useFormContext: () => Record<string, any>
+): InputComponent {
   const defaultInputOptions: DefaultInput = createDefaultInputOptions();
 
   // const inputSubscribers = new Map<
@@ -596,6 +602,7 @@ export function InputFactory({
   // };
 
   return function (props: Input) {
+    const _form = useFormContext();
     //props needs to be internally stable
     const {
       initialInputValue,
@@ -619,7 +626,7 @@ export function InputFactory({
           value: e.target.value,
         };
         if (runOnChange && isFunction(runOnChange)) runOnChange(newState, e);
-        if (key.current !== null) broadcastToSubscribers(key.current);
+        if (key.current !== null) _form.broadcastToSubscribers(key.current);
         return newState;
       });
     }, []);
@@ -669,7 +676,7 @@ export function InputFactory({
           return newState;
         });
       },
-      [key, formInstance]
+      [key, _form]
     );
 
     //!! probs not needed. test with a dynamic classname
@@ -677,6 +684,7 @@ export function InputFactory({
     //   setInputState((s) => ({ ...s, ...props }));
     // }, [props]);
 
+    //!! we shouldn't be doing side effects in render phase
     if (unregisterInput.current === null) {
       if (props.id) {
         unregisterInput.current = registerInput(props.id, inputState);
