@@ -20,7 +20,7 @@ import {
   FormInstance,
   InputComponent,
   FormContext,
-  DefaultInput
+  DefaultInput,
 } from "./types";
 // import { _useInput, InputFactory, FormFactory } from "./react_adapters";
 
@@ -438,11 +438,14 @@ export class Form {
     this.FormContext = React.createContext({} as FormContext);
   }
 
-  useFormContext() {
+  useFormContext = () => {
     return React.useContext(this.FormContext);
-  }
+  };
 
-  registerInput(key: number | string | null, input: Input): UnregisterInput {
+  registerInput = (
+    key: number | string | null,
+    input: Input
+  ): UnregisterInput => {
     const inputId = key ?? this.inputCounter + 1;
     this.inputMap.set(inputId, input);
     this.subscriberMap.set(inputId, new Set());
@@ -457,16 +460,19 @@ export class Form {
           throw new Error("Unregister Error: Input does not exist.");
       },
     };
-  }
+  };
 
-  updateInput(key: string | number, newInput: Input) {
+  updateInput = (key: string | number, newInput: Input) => {
     if (!newInput || key === null)
       throw Error("Invalid data while updating inputMap");
     this.inputMap.set(key, newInput);
     return key;
-  }
+  };
 
-  subscribeToInput(key: string | number, dispatch: React.Dispatch<Input>) {
+  subscribeToInput = (
+    key: string | number,
+    dispatch: React.Dispatch<Input>
+  ) => {
     const subscriberSet = this.subscriberMap.get(key);
 
     if (!subscriberSet)
@@ -479,9 +485,9 @@ export class Form {
       const fail = subscriberSet.delete(dispatch);
       if (fail) throw new Error("Failed unsubscribing from input.");
     };
-  }
+  };
 
-  broadcastToSubscribers(key: string | number) {
+  broadcastToSubscribers = (key: string | number) => {
     const inputSet = this.subscriberMap.get(key);
     const inputVal = this.inputMap.get(key);
 
@@ -489,9 +495,9 @@ export class Form {
       throw new Error("Broadcast Error: Input not found.");
 
     inputSet.forEach((dispatch) => dispatch(inputVal));
-  }
+  };
 
-  resetForm() {
+  resetForm = () => {
     this.inputMap.forEach((input: Input) => {
       if (input.setter)
         input.setter((s: Input) => ({
@@ -500,9 +506,9 @@ export class Form {
           isValid: false,
         }));
     });
-  }
+  };
 
-  getFormValues() {
+  getFormValues = () => {
     return Array.from(this.inputMap).reduce(
       (acc: FormValues, [id, input]): FormValues => {
         acc[id] = input.value;
@@ -510,9 +516,9 @@ export class Form {
       },
       {}
     );
-  }
+  };
 
-  getFormInputs(): FormInputs {
+  getFormInputs = (): FormInputs => {
     if (this.inputMap.size) {
       return Object.fromEntries(this.inputMap);
     } else {
@@ -521,19 +527,19 @@ export class Form {
       );
       return {};
     }
-  }
+  };
 
-  getInput(id: any): Input | undefined {
+  getInput = (id: any): Input | undefined => {
     return this.inputMap.get(id);
-  }
+  };
 
-  validate() {
+  validate = () => {
     return Array.from(this.inputMap.entries()).every(
       ([, input]) => input.isValid
     );
-  }
+  };
 
-  FormProvider(props: React.DOMAttributes<any>) {
+  Form = (props: React.DOMAttributes<any>) => {
     const C = this.FormContext;
     return (
       <C.Provider
@@ -549,24 +555,150 @@ export class Form {
         <form {...props}>{props.children}</form>
       </C.Provider>
     );
-  }
+  };
 
   // TODO: adjust input factory for new form instance
   // todo: needs form properties and input register
-  createInput = () => InputFactory(this.useFormContext);
-  
+  Input = (props: Input) => {
+    const _form = this.useFormContext();
+    //props needs to be internally stable
+    const {
+      initialInputValue,
+      runOnChange,
+      runOnFocus,
+      runOnTouch,
+      runOnBlur,
+      runOnInvalid,
+      validate,
+      ...restOfProps
+    } = props;
+    const key = useRef<null | string | number>(null);
+    const touched = useRef<null | boolean>(null);
+    const unregisterInput = useRef<UnregisterInput | null>(null);
 
-  createForm(): FormInstance {
+    // handler overrides
+    const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      // use fresh react state for runOnChange
+      setInputState((s: Input): Input => {
+        const newState: Input = {
+          ...s,
+          value: e.target.value,
+        };
+        if (runOnChange && isFunction(runOnChange)) runOnChange(newState, e);
+        if (key.current !== null) _form.broadcastToSubscribers(key.current);
+        return newState;
+      });
+    }, []);
+
+    const focus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+      setInputState((s: Input): Input => {
+        const newState: Input = { ...s, touched: true };
+        if (runOnFocus && isFunction(runOnFocus)) runOnFocus(newState, e);
+        if (!touched.current) {
+          touched.current = true;
+          if (runOnTouch && isFunction(runOnTouch)) runOnTouch(newState, e);
+        }
+        return newState;
+      });
+    }, []);
+
+    const blur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+      setInputState((s: Input): Input => {
+        const newState: Input = {
+          ...s,
+          isValid:
+            validate && isFunction(validate)
+              ? validate(inputState.value)
+              : false,
+        };
+        if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState, e);
+        return newState;
+      });
+    }, []);
+
+    const [inputState, _setInputState] = useState<Input>({
+      ...createDefaultInputOptions(),
+      ...props,
+      value: initialInputValue || "",
+      onChange: change,
+      onFocus: focus,
+      onBlur: blur,
+    });
+
+    const setInputState = useCallback(
+      (val: Input | ((s: Input) => Input)) => {
+        // write to input in map while react state updates
+        _setInputState((s: Input): Input => {
+          // callbacks are expected to return an Input type
+          const newState = typeof val === "function" ? val(s) : val;
+          if (key.current !== null) _form.updateInput(key.current, newState);
+          return newState;
+        });
+      },
+      [key, _form]
+    );
+
+    //!! probs not needed. test with a dynamic classname
+    // useEffect(() => {
+    //   setInputState((s) => ({ ...s, ...props }));
+    // }, [props]);
+
+    useEffect(() => {
+      // registers this input
+      let registeredInput: UnregisterInput;
+      if (key.current === null) {
+        if (props.id) {
+          key.current = props.id;
+          registeredInput = _form.registerInput(key.current, inputState);
+        } else {
+          registeredInput = _form.registerInput(null, inputState);
+          key.current = registeredInput.newInputId;
+        }
+
+        setInputState((s) => ({
+          ...s,
+          setter: setInputState,
+          inputKey: key.current,
+        }));
+      }
+
+      //cleanup input from form instance
+      return () => {
+        if (unregisterInput.current) {
+          const { unregister, newInputId } = unregisterInput.current;
+          unregister(newInputId);
+        }
+      };
+    }, []);
+
+    return (
+      <input
+        value={inputState.value}
+        onChange={change}
+        onFocus={focus}
+        onBlur={blur}
+        onInvalid={runOnInvalid ?? undefined}
+        {...restOfProps}
+      />
+    );
+  };
+
+  createForm = (): FormInstance => {
     return {
       resetForm: this.resetForm,
       getFormValues: this.getFormValues,
       getFormInputs: this.getFormInputs,
       getInput: this.getInput,
       isFormValid: this.validate,
-      Form: this.FormProvider,
-      Input: this.createInput(),
+      Form: this.Form,
+      Input: this.Input,
     };
-  }
+  };
+}
+
+export function createForm(): Form {
+  const formInstance = new Form();
+  return formInstance;
 }
 
 //!! MIGRATE TO PUB SUB PATTERN for dependents to update

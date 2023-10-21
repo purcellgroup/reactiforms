@@ -1,299 +1,299 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactElement,
-  BaseSyntheticEvent,
-  useMemo,
-} from "react";
-import {
-  // Form,
-  createDefaultInputOptions,
-  broadcastToSubscribers,
-  registerInput,
-  updateInputMap,
-  getInput,
-  subscribeToInput,
-} from "./core";
-// import type { getInput, subscribeToInput } from "./core";
-import {
-  DefaultInput,
-  FormComponent,
-  FormInstance,
-  Input,
-  InputComponent,
-  UnregisterInput,
-} from "./types";
+// import React, {
+//   useState,
+//   useEffect,
+//   useCallback,
+//   useRef,
+//   ReactElement,
+//   BaseSyntheticEvent,
+//   useMemo,
+// } from "react";
+// import {
+//   // Form,
+//   createDefaultInputOptions,
+//   broadcastToSubscribers,
+//   registerInput,
+//   updateInputMap,
+//   getInput,
+//   subscribeToInput,
+// } from "./core";
+// // import type { getInput, subscribeToInput } from "./core";
+// import {
+//   DefaultInput,
+//   FormComponent,
+//   FormInstance,
+//   Input,
+//   InputComponent,
+//   UnregisterInput,
+// } from "./types";
 
-// export function FormFactory(formInstance: FormInstance): FormComponent {
-//   // if (!(formInstance instanceof FormInstance)) {
-//   //   throw new Error(
-//   //     "Internal Error: Form instance invalid. Something is *really* wrong"
-//   //   );
-//   // }
+// // export function FormFactory(formInstance: FormInstance): FormComponent {
+// //   // if (!(formInstance instanceof FormInstance)) {
+// //   //   throw new Error(
+// //   //     "Internal Error: Form instance invalid. Something is *really* wrong"
+// //   //   );
+// //   // }
 
-//   return function ({ children, onSubmit, ...props }): ReactElement {
-//     // todo: create suspense
+// //   return function ({ children, onSubmit, ...props }): ReactElement {
+// //     // todo: create suspense
+// //     return (
+// //       <form
+// //         onSubmit={(e: BaseSyntheticEvent) => {
+// //           e.preventDefault();
+
+// //           if (onSubmit && isFunction(onSubmit)) {
+// //             const values = Array.from(e.target.children).reduce((acc, child, idx) => {
+// //               if(child.localName !== "input") return acc
+// //               return ({ ...acc, [child.id]: child.value })
+// //             }, {})
+// //             onSubmit(e, values);
+// //           } else {
+// //             formInstance.options.handleSubmit();
+// //           }
+
+// //           formInstance.resetForm();
+// //         }}
+// //         {...props}
+// //       >
+// //         {children}
+// //       </form>
+// //     );
+// //   };
+// // }
+
+// export function FormFactory() {
+//   const formContext = React.createContext({});
+
+//   return function FormProvider({ children }: { children: React.ReactNode }) {
+//     const inputMap = useMemo(() => new Map<string | number, Input>(), []);
+//     const subscriberMap = new Map<
+//       string | number,
+//       Set<React.Dispatch<Input>>
+//     >();
+//     const formStore = useMemo(() => ({
+//       inputMap,
+//       subscriberMap,
+//     }), []);
 //     return (
-//       <form
-//         onSubmit={(e: BaseSyntheticEvent) => {
-//           e.preventDefault();
-
-//           if (onSubmit && isFunction(onSubmit)) {
-//             const values = Array.from(e.target.children).reduce((acc, child, idx) => {
-//               if(child.localName !== "input") return acc
-//               return ({ ...acc, [child.id]: child.value })
-//             }, {})
-//             onSubmit(e, values);
-//           } else {
-//             formInstance.options.handleSubmit();
-//           }
-
-//           formInstance.resetForm();
-//         }}
-//         {...props}
-//       >
-//         {children}
-//       </form>
+//       <formContext.Provider value={formStore}>{children}</formContext.Provider>
 //     );
 //   };
 // }
 
-export function FormFactory() {
-  const formContext = React.createContext({});
+// //!! MIGRATE TO PUB SUB PATTERN for dependents to update
 
-  return function FormProvider({ children }: { children: React.ReactNode }) {
-    const inputMap = useMemo(() => new Map<string | number, Input>(), []);
-    const subscriberMap = new Map<
-      string | number,
-      Set<React.Dispatch<Input>>
-    >();
-    const formStore = useMemo(() => ({
-      inputMap,
-      subscriberMap,
-    }), []);
-    return (
-      <formContext.Provider value={formStore}>{children}</formContext.Provider>
-    );
-  };
-}
+// export function InputFactory(formInstance: FormInstance): InputComponent {
+//   const defaultInputOptions: DefaultInput = createDefaultInputOptions();
 
-//!! MIGRATE TO PUB SUB PATTERN for dependents to update
+//   // const inputSubscribers = new Map<
+//   //   string | number,
+//   //   Set<React.Dispatch<Input>>
+//   // >();
 
-export function InputFactory(formInstance: FormInstance): InputComponent {
-  const defaultInputOptions: DefaultInput = createDefaultInputOptions();
+//   // const subscribeToInput = (
+//   //   key: string | number,
+//   //   dispatch: React.Dispatch<Input>
+//   // ) => {
+//   //   const subscriberSet = inputSubscribers.get(key);
+//   //   if (subscriberSet) subscriberSet.add(dispatch);
+//   //   return (key: string | number) => {
+//   //     inputSubscribers.delete(key);
+//   //   };
+//   // };
 
-  // const inputSubscribers = new Map<
-  //   string | number,
-  //   Set<React.Dispatch<Input>>
-  // >();
+//   // const broadcastToSubscribers = (key: string | number) => {
+//   //   const inputSet = inputSubscribers.get(key);
+//   //   const inputVal = formInstance._inputMap().get(key);
+//   //   if (inputSet && inputVal) {
+//   //     inputSet.forEach((dispatch) => dispatch(inputVal));
+//   //   }
+//   // };
 
-  // const subscribeToInput = (
-  //   key: string | number,
-  //   dispatch: React.Dispatch<Input>
-  // ) => {
-  //   const subscriberSet = inputSubscribers.get(key);
-  //   if (subscriberSet) subscriberSet.add(dispatch);
-  //   return (key: string | number) => {
-  //     inputSubscribers.delete(key);
-  //   };
-  // };
+//   return function (props: Input) {
+//     //props needs to be internally stable
+//     const {
+//       initialInputValue,
+//       runOnChange,
+//       runOnFocus,
+//       runOnTouch,
+//       runOnBlur,
+//       runOnInvalid,
+//       validate,
+//       ...restOfProps
+//     } = props;
+//     const key = useRef<null | string | number>(props.id ?? null);
+//     const touched = useRef<null | boolean>(null);
+//     const unregisterInput = useRef<UnregisterInput | null>(null);
+//     // handler overrides
+//     const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+//       // use fresh react state for runOnChange
+//       setInputState((s: Input): Input => {
+//         const newState: Input = {
+//           ...s,
+//           value: e.target.value,
+//         };
+//         if (runOnChange && isFunction(runOnChange)) runOnChange(newState, e);
+//         if (key.current !== null) broadcastToSubscribers(key.current);
+//         return newState;
+//       });
+//     }, []);
 
-  // const broadcastToSubscribers = (key: string | number) => {
-  //   const inputSet = inputSubscribers.get(key);
-  //   const inputVal = formInstance._inputMap().get(key);
-  //   if (inputSet && inputVal) {
-  //     inputSet.forEach((dispatch) => dispatch(inputVal));
-  //   }
-  // };
+//     const focus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+//       setInputState((s: Input): Input => {
+//         const newState: Input = { ...s, touched: true };
+//         if (runOnFocus && isFunction(runOnFocus)) runOnFocus(newState, e);
+//         if (!touched.current) {
+//           touched.current = true;
+//           if (runOnTouch && isFunction(runOnTouch)) runOnTouch(newState, e);
+//         }
+//         return newState;
+//       });
+//     }, []);
 
-  return function (props: Input) {
-    //props needs to be internally stable
-    const {
-      initialInputValue,
-      runOnChange,
-      runOnFocus,
-      runOnTouch,
-      runOnBlur,
-      runOnInvalid,
-      validate,
-      ...restOfProps
-    } = props;
-    const key = useRef<null | string | number>(props.id ?? null);
-    const touched = useRef<null | boolean>(null);
-    const unregisterInput = useRef<UnregisterInput | null>(null);
-    // handler overrides
-    const change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      // use fresh react state for runOnChange
-      setInputState((s: Input): Input => {
-        const newState: Input = {
-          ...s,
-          value: e.target.value,
-        };
-        if (runOnChange && isFunction(runOnChange)) runOnChange(newState, e);
-        if (key.current !== null) broadcastToSubscribers(key.current);
-        return newState;
-      });
-    }, []);
+//     const blur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+//       setInputState((s: Input): Input => {
+//         const newState: Input = {
+//           ...s,
+//           isValid:
+//             validate && isFunction(validate)
+//               ? validate(inputState.value)
+//               : false,
+//         };
+//         if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState, e);
+//         return newState;
+//       });
+//     }, []);
 
-    const focus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-      setInputState((s: Input): Input => {
-        const newState: Input = { ...s, touched: true };
-        if (runOnFocus && isFunction(runOnFocus)) runOnFocus(newState, e);
-        if (!touched.current) {
-          touched.current = true;
-          if (runOnTouch && isFunction(runOnTouch)) runOnTouch(newState, e);
-        }
-        return newState;
-      });
-    }, []);
+//     const [inputState, _setInputState] = useState<Input>({
+//       ...defaultInputOptions,
+//       ...props,
+//       value: initialInputValue || "",
+//       onChange: change,
+//       onFocus: focus,
+//       onBlur: blur,
+//     });
 
-    const blur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-      setInputState((s: Input): Input => {
-        const newState: Input = {
-          ...s,
-          isValid:
-            validate && isFunction(validate)
-              ? validate(inputState.value)
-              : false,
-        };
-        if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState, e);
-        return newState;
-      });
-    }, []);
+//     const setInputState = useCallback(
+//       (val: Input | ((s: Input) => Input)) => {
+//         // write to input in map while react state updates
+//         _setInputState((s: Input): Input => {
+//           // callbacks are expected to return an Input type
+//           const newState = typeof val === "function" ? val(s) : val;
+//           if (key.current !== null) updateInputMap(key.current, newState);
+//           return newState;
+//         });
+//       },
+//       [key, formInstance]
+//     );
 
-    const [inputState, _setInputState] = useState<Input>({
-      ...defaultInputOptions,
-      ...props,
-      value: initialInputValue || "",
-      onChange: change,
-      onFocus: focus,
-      onBlur: blur,
-    });
+//     //!! probs not needed. test with a dynamic classname
+//     // useEffect(() => {
+//     //   setInputState((s) => ({ ...s, ...props }));
+//     // }, [props]);
 
-    const setInputState = useCallback(
-      (val: Input | ((s: Input) => Input)) => {
-        // write to input in map while react state updates
-        _setInputState((s: Input): Input => {
-          // callbacks are expected to return an Input type
-          const newState = typeof val === "function" ? val(s) : val;
-          if (key.current !== null) updateInputMap(key.current, newState);
-          return newState;
-        });
-      },
-      [key, formInstance]
-    );
+//     if (unregisterInput.current === null) {
+//       if (props.id) {
+//         unregisterInput.current = registerInput(props.id, inputState);
+//         key.current = props.id;
+//       } else {
+//         unregisterInput.current = registerInput(null, inputState);
+//         key.current = unregisterInput.current.newInputId;
+//       }
 
-    //!! probs not needed. test with a dynamic classname
-    // useEffect(() => {
-    //   setInputState((s) => ({ ...s, ...props }));
-    // }, [props]);
+//       setInputState((s) => ({
+//         ...s,
+//         setter: setInputState,
+//         inputKey: key.current,
+//       }));
+//     }
 
-    if (unregisterInput.current === null) {
-      if (props.id) {
-        unregisterInput.current = registerInput(props.id, inputState);
-        key.current = props.id;
-      } else {
-        unregisterInput.current = registerInput(null, inputState);
-        key.current = unregisterInput.current.newInputId;
-      }
+//     useEffect(() => {
+//       // registers this input
+//       let registeredInput: UnregisterInput;
+//       if (key.current === null) {
+//         if (props.id) {
+//           registeredInput = registerInput(props.id, inputState);
+//           key.current = props.id;
+//         } else {
+//           registeredInput = registerInput(null, inputState);
+//           key.current = registeredInput.newInputId;
+//         }
 
-      setInputState((s) => ({
-        ...s,
-        setter: setInputState,
-        inputKey: key.current,
-      }));
-    }
+//         setInputState((s) => ({
+//           ...s,
+//           setter: setInputState,
+//           inputKey: key.current,
+//         }));
+//       }
 
-    useEffect(() => {
-      // registers this input
-      let registeredInput: UnregisterInput;
-      if (key.current === null) {
-        if (props.id) {
-          registeredInput = registerInput(props.id, inputState);
-          key.current = props.id;
-        } else {
-          registeredInput = registerInput(null, inputState);
-          key.current = registeredInput.newInputId;
-        }
+//       //cleanup input from form instance
+//       return () => {
+//         if (unregisterInput.current) {
+//           const { unregister, newInputId } = unregisterInput.current;
+//           unregister(newInputId);
+//         }
+//       };
+//     }, []);
 
-        setInputState((s) => ({
-          ...s,
-          setter: setInputState,
-          inputKey: key.current,
-        }));
-      }
+//     return (
+//       <input
+//         value={inputState.value}
+//         onChange={change}
+//         onFocus={focus}
+//         onBlur={blur}
+//         onInvalid={runOnInvalid ?? undefined}
+//         {...restOfProps}
+//       />
+//     );
+//   };
+// }
 
-      //cleanup input from form instance
-      return () => {
-        if (unregisterInput.current) {
-          const { unregister, newInputId } = unregisterInput.current;
-          unregister(newInputId);
-        }
-      };
-    }, []);
+// // utility hook to rerender HOCs for Inputs
+// export function _useInput(
+//   get_input: typeof getInput,
+//   subscribe: typeof subscribeToInput
+// ) {
+//   return function (inputId: string) {
+//     const subscribed = useRef(false);
+//     const [i, setI] = useState(() => get_input(inputId));
 
-    return (
-      <input
-        value={inputState.value}
-        onChange={change}
-        onFocus={focus}
-        onBlur={blur}
-        onInvalid={runOnInvalid ?? undefined}
-        {...restOfProps}
-      />
-    );
-  };
-}
+//     // if (!_subscribed.current) {
+//     // }
 
-// utility hook to rerender HOCs for Inputs
-export function _useInput(
-  get_input: typeof getInput,
-  subscribe: typeof subscribeToInput
-) {
-  return function (inputId: string) {
-    const subscribed = useRef(false);
-    const [i, setI] = useState(() => get_input(inputId));
+//     useEffect(() => {
+//       const unsubscribe = subscribe(inputId, setI);
+//       subscribed.current = true;
 
-    // if (!_subscribed.current) {
-    // }
+//       return () => {
+//         unsubscribe(inputId);
+//       };
+//     }, []);
 
-    useEffect(() => {
-      const unsubscribe = subscribe(inputId, setI);
-      subscribed.current = true;
+//     return i;
+//   };
+// }
 
-      return () => {
-        unsubscribe(inputId);
-      };
-    }, []);
+// export function useInput(inputId: string) {
+//   const subscribed = useRef(false);
+//   const [i, setI] = useState(() => getInput(inputId));
 
-    return i;
-  };
-}
+//   useEffect(() => {
+//     let unsubscribe: (inputId: string) => void;
 
-export function useInput(inputId: string) {
-  const subscribed = useRef(false);
-  const [i, setI] = useState(() => getInput(inputId));
+//     if (!subscribed.current) {
+//       unsubscribe = subscribeToInput(inputId, setI);
+//       subscribed.current = true;
+//     }
 
-  useEffect(() => {
-    let unsubscribe: (inputId: string) => void;
+//     return () => {
+//       if (unsubscribe) unsubscribe(inputId);
+//     };
+//   }, []);
 
-    if (!subscribed.current) {
-      unsubscribe = subscribeToInput(inputId, setI);
-      subscribed.current = true;
-    }
+//   return i;
+// }
 
-    return () => {
-      if (unsubscribe) unsubscribe(inputId);
-    };
-  }, []);
-
-  return i;
-}
-
-export const isFunction = (fn: any): fn is Function => {
-  if (typeof fn === "function") return true;
-  console.error(new Error("Optional handlers must be functions."));
-  return false;
-};
+// export const isFunction = (fn: any): fn is Function => {
+//   if (typeof fn === "function") return true;
+//   console.error(new Error("Optional handlers must be functions."));
+//   return false;
+// };
