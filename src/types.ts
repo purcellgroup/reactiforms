@@ -29,7 +29,7 @@ export interface DefaultInput {
   type: string;
   name: string;
   touched: boolean;
-  isValid: boolean;
+  isValid: boolean | null;
   initialInputValue: string;
   validate:
     | null
