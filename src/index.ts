@@ -1,3 +1,3 @@
-import { createForm, inspectInputMap } from "./core";
+import { Form } from "./core";
 import { useInput } from "./react_adapters";
-export { createForm, useInput, inspectInputMap };
+export { Form };

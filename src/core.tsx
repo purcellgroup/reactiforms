@@ -18,10 +18,9 @@ import {
   MutationAction,
   UnregisterInput,
   FormInstance,
-  FormInstance,
-  FormInstance,
   InputComponent,
   FormContext,
+  DefaultInput
 } from "./types";
 // import { _useInput, InputFactory, FormFactory } from "./react_adapters";
 
@@ -573,7 +572,7 @@ export class Form {
 //!! MIGRATE TO PUB SUB PATTERN for dependents to update
 
 export function InputFactory(
-  useFormContext: () => Record<string, any>
+  useFormContext: () => FormContext
 ): InputComponent {
   const defaultInputOptions: DefaultInput = createDefaultInputOptions();
 
@@ -672,7 +671,7 @@ export function InputFactory(
         _setInputState((s: Input): Input => {
           // callbacks are expected to return an Input type
           const newState = typeof val === "function" ? val(s) : val;
-          if (key.current !== null) updateInputMap(key.current, newState);
+          if (key.current !== null) _form.updateInput(key.current, newState);
           return newState;
         });
       },
@@ -685,12 +684,13 @@ export function InputFactory(
     // }, [props]);
 
     //!! we shouldn't be doing side effects in render phase
+    //!! TODO: TARGET FOR REMOVAL
     if (unregisterInput.current === null) {
       if (props.id) {
-        unregisterInput.current = registerInput(props.id, inputState);
+        unregisterInput.current = _form.registerInput(props.id, inputState);
         key.current = props.id;
       } else {
-        unregisterInput.current = registerInput(null, inputState);
+        unregisterInput.current = _form.registerInput(null, inputState);
         key.current = unregisterInput.current.newInputId;
       }
 
@@ -706,10 +706,10 @@ export function InputFactory(
       let registeredInput: UnregisterInput;
       if (key.current === null) {
         if (props.id) {
-          registeredInput = registerInput(props.id, inputState);
+          registeredInput = _form.registerInput(props.id, inputState);
           key.current = props.id;
         } else {
-          registeredInput = registerInput(null, inputState);
+          registeredInput = _form.registerInput(null, inputState);
           key.current = registeredInput.newInputId;
         }
 
@@ -743,49 +743,50 @@ export function InputFactory(
 }
 
 // utility hook to rerender HOCs for Inputs
-export function _useInput(
-  get_input: typeof getInput,
-  subscribe: typeof subscribeToInput
-) {
-  return function (inputId: string) {
-    const subscribed = useRef(false);
-    const [i, setI] = useState(() => get_input(inputId));
+//!! needs modification due to Form class refactor. types out of scope
+// export function _useInput(
+//   get_input: typeof getInput,
+//   subscribe: typeof subscribeToInput
+// ) {
+//   return function (inputId: string) {
+//     const subscribed = useRef(false);
+//     const [i, setI] = useState(() => get_input(inputId));
 
-    // if (!_subscribed.current) {
-    // }
+//     // if (!_subscribed.current) {
+//     // }
 
-    useEffect(() => {
-      const unsubscribe = subscribe(inputId, setI);
-      subscribed.current = true;
+//     useEffect(() => {
+//       const unsubscribe = subscribe(inputId, setI);
+//       subscribed.current = true;
 
-      return () => {
-        unsubscribe(inputId);
-      };
-    }, []);
+//       return () => {
+//         unsubscribe(inputId);
+//       };
+//     }, []);
 
-    return i;
-  };
-}
+//     return i;
+//   };
+// }
 
-export function useInput(inputId: string) {
-  const subscribed = useRef(false);
-  const [i, setI] = useState(() => getInput(inputId));
+// export function useInput(inputId: string) {
+//   const subscribed = useRef(false);
+//   const [i, setI] = useState(() => getInput(inputId));
 
-  useEffect(() => {
-    let unsubscribe: (inputId: string) => void;
+//   useEffect(() => {
+//     let unsubscribe: (inputId: string) => void;
 
-    if (!subscribed.current) {
-      unsubscribe = subscribeToInput(inputId, setI);
-      subscribed.current = true;
-    }
+//     if (!subscribed.current) {
+//       unsubscribe = subscribeToInput(inputId, setI);
+//       subscribed.current = true;
+//     }
 
-    return () => {
-      if (unsubscribe) unsubscribe(inputId);
-    };
-  }, []);
+//     return () => {
+//       if (unsubscribe) unsubscribe(inputId);
+//     };
+//   }, []);
 
-  return i;
-}
+//   return i;
+// }
 
 export const isFunction = (fn: any): fn is Function => {
   if (typeof fn === "function") return true;

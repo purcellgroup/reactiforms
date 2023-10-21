@@ -92,11 +92,16 @@ export type InputComponent = (
   props: Input
 ) => ReactElement<InputHTMLAttributes<HTMLInputElement>>;
 
+export interface UnregisterInput {
+  newInputId: number | string;
+  unregister: (key: string | number) => void
+}
+
 export interface FormContext {
   inputMap: Map<string | number, Input>,
   subscriberMap: Map<string | number, Set<React.Dispatch<Input>>>,
-  updateInput: (key: string | number) => typeof key,
-  registerInput: (key: number | string | null, input: Input) => (key: string | number) => void,
+  updateInput: (key: string | number, newInput: Input) => typeof key,
+  registerInput: (key: number | string | null, input: Input) => UnregisterInput,
   subscribeToInput: (key: string | number, dispatch: React.Dispatch<Input>) => (dispatch: React.Dispatch<Input>) => void,
   broadcastToSubscribers: (key: string | number) => void,
 }
