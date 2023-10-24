@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flow-state-15/tiny-fast-forms.git"
+    "url": "git+https://github.com/flow-state-15/Reactiforms.git"
   },
   "keywords": [
     "react",
@@ -20,12 +20,12 @@
   "author": "Dan Purcell purcellgroup88@gmail.com",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/flow-state-15/tiny-fast-forms/issues"
+    "url": "https://github.com/flow-state-15/Reactiforms/issues"
   },
-  "homepage": "https://github.com/flow-state-15/tiny-fast-forms#readme",
+  "homepage": "https://github.com/flow-state-15/Reactiforms#readme",
   "peerDependencies": {
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.5",
