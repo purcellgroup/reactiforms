@@ -235,7 +235,7 @@ export class Form {
     return this.inputMap.get(id);
   };
 
-  validate = () => {
+  isFormValid = () => {
     return Array.from(this.inputMap.entries()).every(
       ([, input]) => input.isValid
     );
@@ -389,7 +389,7 @@ export class Form {
       getFormValues: this.getFormValues,
       getFormInputs: this.getFormInputs,
       getInput: this.getInput,
-      isFormValid: this.validate,
+      isFormValid: this.isFormValid,
       Form: this.Form,
       Input: this.Input,
     };
