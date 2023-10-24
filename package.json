@@ -1,5 +1,5 @@
 {
-  "name": "tiny-fast-forms",
+  "name": "reactiforms",
   "version": "0.1.4",
   "description": "A tiny React library to quickly create efficient react forms.",
   "type": "module",
