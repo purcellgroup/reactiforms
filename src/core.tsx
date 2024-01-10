@@ -285,7 +285,8 @@ export class Form {
         const newState: Input = {
           ...s,
           value: e.target.value,
-          isValid: validate && isFunction(validate) ? validate(s.value) : null,
+          isValid:
+            validate && isFunction(validate) ? validate(e.target.value) : null,
         };
         if (runOnChange && isFunction(runOnChange)) runOnChange(newState, e);
         if (key.current !== null) _form.broadcastToSubscribers(key.current);
@@ -309,7 +310,6 @@ export class Form {
       setInputState((s: Input): Input => {
         const newState: Input = {
           ...s,
-          // isValid: validate && isFunction(validate) ? validate(s.value) : false,
         };
         if (runOnBlur && isFunction(runOnBlur)) runOnBlur(newState, e);
         return newState;

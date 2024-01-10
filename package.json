@@ -6,7 +6,7 @@
   "main": "dist/index.es.js",
   "scripts": {
     "test": "npm test",
-    "build": "rollup -c"
+    "build": "rollup -c --watch"
   },
   "repository": {
     "type": "git",
