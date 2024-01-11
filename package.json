@@ -1,6 +1,6 @@
 {
   "name": "reactiforms",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A React library to quickly create efficient react forms.",
   "type": "module",
   "main": "dist/index.es.js",
