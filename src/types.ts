@@ -1,12 +1,10 @@
 import React, {
   HTMLProps,
-  JSXElementConstructor,
   ReactNode,
   SyntheticEvent,
   ReactElement,
   InputHTMLAttributes,
 } from "react";
-// import type { Form } from "./core";
 
 export type Input = DefaultInput & InputHTMLAttributes<HTMLInputElement>;
 
@@ -50,17 +48,13 @@ export interface DefaultInput {
 }
 
 export interface FormInstance {
-  // formId: number;
-  // options: DefaultForm & Record<string, any>;
   resetForm: () => void;
   getFormValues: () => FormValues;
   getFormInputs: () => Record<string, Input> | Record<string, never>;
   getInput: (id: any) => Input | undefined;
-  isFormValid: () => boolean;
-  // _inputMap: () => Map<string | number, Input>;
+  isValid: () => boolean;
   Input: InputComponent;
   Form: FormComponent;
-  // useInput?: (arg0: any) => Input | undefined;
 }
 
 export interface DefaultForm {
@@ -79,8 +73,6 @@ export interface FormInputs {
   [k: string]: Input;
 }
 
-// components and hooks
-
 export type FormComponent = (
   props: {
     children: ReactNode;
@@ -94,14 +86,17 @@ export type InputComponent = (
 
 export interface UnregisterInput {
   newInputId: number | string;
-  unregister: (key: string | number) => void
+  unregister: (key: string | number) => void;
 }
 
 export interface FormContext {
-  inputMap: Map<string | number, Input>,
-  subscriberMap: Map<string | number, Set<React.Dispatch<Input>>>,
-  updateInput: (key: string | number, newInput: Input) => typeof key,
-  registerInput: (key: number | string | null, input: Input) => UnregisterInput,
-  subscribeToInput: (key: string | number, dispatch: React.Dispatch<Input>) => (dispatch: React.Dispatch<Input>) => void,
-  broadcastToSubscribers: (key: string | number) => void,
+  inputMap: Map<string | number, Input>;
+  subscriberMap: Map<string | number, Set<React.Dispatch<Input>>>;
+  updateInput: (key: string | number, newInput: Input) => typeof key;
+  registerInput: (key: number | string | null, input: Input) => UnregisterInput;
+  subscribeToInput: (
+    key: string | number,
+    dispatch: React.Dispatch<Input>
+  ) => (dispatch: React.Dispatch<Input>) => void;
+  broadcastToSubscribers: (key: string | number) => void;
 }
