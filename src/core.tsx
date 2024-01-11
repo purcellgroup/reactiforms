@@ -17,92 +17,6 @@ import {
   DefaultInput,
 } from "./types";
 
-// copy of store for mutations
-export let FORM_STORE_INSTANCES: Map<number, Form> = new Map();
-let NEXT_FORM_STORE_INSTANCES: Map<number, Form> = FORM_STORE_INSTANCES;
-
-let FORM_COUNTER = 0;
-
-const UNSUB_FORM = (formId: number) => {
-  GEN_MUTABLE_STORE();
-
-  NEXT_FORM_STORE_INSTANCES.delete(formId);
-  FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
-};
-
-const SUB_FORM = (formId: number, form: Form) => {
-  GEN_MUTABLE_STORE();
-  NEXT_FORM_STORE_INSTANCES.set(formId, form);
-  FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
-};
-
-const GEN_MUTABLE_STORE = () => {
-  if (NEXT_FORM_STORE_INSTANCES === FORM_STORE_INSTANCES) {
-    NEXT_FORM_STORE_INSTANCES = new Map();
-    FORM_STORE_INSTANCES.forEach((value, key) => {
-      NEXT_FORM_STORE_INSTANCES.set(key, value);
-    });
-  }
-};
-
-const GEN_FORM_ID = () => {
-  ++FORM_COUNTER;
-  return FORM_COUNTER;
-};
-
-const GEN_FORM_OPTIONS = (
-  config: Record<string, any>
-): DefaultForm & Record<string, any> => ({
-  requireSpinner: false,
-  spinner: null,
-  suspense: false,
-  spinnerTimeout: null,
-  handleSubmit: () => {
-    console.warn("Form's handleSubmit not provided");
-  },
-  ...config,
-});
-
-//assign stable refs to hooks and insulate from rerenders
-// export const genStore = (stateOverloads) => {
-//   let unique_store = null;
-//   return () => {
-//     if (!unique_store) unique_store = GEN_FORM_STORE(stateOverloads);
-//     return unique_store;
-//   };
-// };
-
-// // stabilized memo across renders
-// export const GEN_STABLE_REF = (value = null) => {
-//   const _ref = null;
-//   return () => {
-//     if (!_ref) {
-//       _ref = { current: value ? value : null };
-//     }
-//     return _ref;
-//   };
-// };
-// export const createStableRef = (value) => {
-//   const _ = GEN_STABLE_REF();
-// };
-// export const useStableRef = (value) => createStableRef(value);
-
-const createDefaultFormOptions = () => ({
-  //react spinner component
-  requireSpinner: false,
-  spinner: null,
-  // todo form state: changes, dirty fields, touched fields
-  // todo: input overloads. these are functions applied to all inputs
-  // todo: in form by default
-  inputUtils: {},
-  // todo: submit suspense flag
-  suspense: false,
-  spinnerTimeout: null,
-  onSubmit: () => {
-    console.warn("Form's `onSubmit` not provided");
-  },
-});
-
 // todo: extract function defs and flatten
 export const createDefaultInputOptions = () => ({
   id: "",
@@ -235,7 +149,7 @@ export class Form {
     return this.inputMap.get(id);
   };
 
-  isFormValid = () => {
+  isValid = () => {
     return Array.from(this.inputMap.entries()).every(
       ([, input]) => input.isValid
     );
@@ -338,11 +252,6 @@ export class Form {
       [key, _form]
     );
 
-    //!! probs not needed. test with a dynamic classname
-    // useEffect(() => {
-    //   setInputState((s) => ({ ...s, ...props }));
-    // }, [props]);
-
     useEffect(() => {
       // registers this input
       let registeredInput: UnregisterInput;
@@ -383,72 +292,88 @@ export class Form {
     );
   };
 
-  createForm = (): FormInstance => {
+  createPublicForm = (): FormInstance => {
     return {
       resetForm: this.resetForm,
       getFormValues: this.getFormValues,
       getFormInputs: this.getFormInputs,
       getInput: this.getInput,
-      isFormValid: this.isFormValid,
+      isValid: this.isValid,
       Form: this.Form,
       Input: this.Input,
     };
   };
 }
 
-export function createForm(): Form {
-  const formInstance = new Form();
-  return formInstance;
+export function createForm(): FormInstance {
+  return new Form().createPublicForm();
 }
-
-// todo: utility hook to rerender HOCs for Inputs
-//!! needs modification due to Form class refactor. types out of scope
-// export function _useInput(
-//   get_input: typeof getInput,
-//   subscribe: typeof subscribeToInput
-// ) {
-//   return function (inputId: string) {
-//     const subscribed = useRef(false);
-//     const [i, setI] = useState(() => get_input(inputId));
-
-//     // if (!_subscribed.current) {
-//     // }
-
-//     useEffect(() => {
-//       const unsubscribe = subscribe(inputId, setI);
-//       subscribed.current = true;
-
-//       return () => {
-//         unsubscribe(inputId);
-//       };
-//     }, []);
-
-//     return i;
-//   };
-// }
-
-// export function useInput(inputId: string) {
-//   const subscribed = useRef(false);
-//   const [i, setI] = useState(() => getInput(inputId));
-
-//   useEffect(() => {
-//     let unsubscribe: (inputId: string) => void;
-
-//     if (!subscribed.current) {
-//       unsubscribe = subscribeToInput(inputId, setI);
-//       subscribed.current = true;
-//     }
-
-//     return () => {
-//       if (unsubscribe) unsubscribe(inputId);
-//     };
-//   }, []);
-
-//   return i;
-// }
 
 export const isFunction = (fn: any): fn is Function => {
   if (typeof fn === "function") return true;
   console.error(new Error("Optional handlers must be functions."));
   return false;
 };
+
+// below is infra for possible larger form pub/sub if necessary
+// copy of store for mutations
+export let FORM_STORE_INSTANCES: Map<number, Form> = new Map();
+let NEXT_FORM_STORE_INSTANCES: Map<number, Form> = FORM_STORE_INSTANCES;
+
+let FORM_COUNTER = 0;
+
+const UNSUB_FORM = (formId: number) => {
+  GEN_MUTABLE_STORE();
+
+  NEXT_FORM_STORE_INSTANCES.delete(formId);
+  FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
+};
+
+const SUB_FORM = (formId: number, form: Form) => {
+  GEN_MUTABLE_STORE();
+  NEXT_FORM_STORE_INSTANCES.set(formId, form);
+  FORM_STORE_INSTANCES = NEXT_FORM_STORE_INSTANCES;
+};
+
+const GEN_MUTABLE_STORE = () => {
+  if (NEXT_FORM_STORE_INSTANCES === FORM_STORE_INSTANCES) {
+    NEXT_FORM_STORE_INSTANCES = new Map();
+    FORM_STORE_INSTANCES.forEach((value, key) => {
+      NEXT_FORM_STORE_INSTANCES.set(key, value);
+    });
+  }
+};
+
+const GEN_FORM_ID = () => {
+  ++FORM_COUNTER;
+  return FORM_COUNTER;
+};
+
+const GEN_FORM_OPTIONS = (
+  config: Record<string, any>
+): DefaultForm & Record<string, any> => ({
+  requireSpinner: false,
+  spinner: null,
+  suspense: false,
+  spinnerTimeout: null,
+  handleSubmit: () => {
+    console.warn("Form's handleSubmit not provided");
+  },
+  ...config,
+});
+
+const createDefaultFormOptions = () => ({
+  //react spinner component
+  requireSpinner: false,
+  spinner: null,
+  // todo form state: changes, dirty fields, touched fields
+  // todo: input overloads. these are functions applied to all inputs
+  // todo: in form by default
+  inputUtils: {},
+  // todo: submit suspense flag
+  suspense: false,
+  spinnerTimeout: null,
+  onSubmit: () => {
+    console.warn("Form's `onSubmit` not provided");
+  },
+});

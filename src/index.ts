@@ -1,3 +1,2 @@
-import { createForm } from "./core";
-// import { useInput } from "./react_adapters";
-export { createForm };
+export { createForm } from "./core";
+export * from "./types";
