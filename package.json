@@ -5,6 +5,9 @@
   "type": "module",
   "main": "dist/index.es.js",
   "types": "dist/types.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "test": "npm test",
     "build": "rollup -c"
